@@ -1,0 +1,840 @@
+/* 登录弹窗（短信登录 / 密码登录）+ 开通服务对话框 + 头像菜单 */
+
+.auth-shell {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+  color: #17212b;
+  font-family: inherit;
+}
+
+/* ---------- 登录弹窗 ---------- */
+.auth-login-view {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 32px;
+  pointer-events: auto;
+  background: rgba(16, 34, 43, .45);
+}
+
+.auth-login-view.is-open {
+  display: grid;
+  /* 固定列宽为整行，避免面板随当前页签内容多少而变窄 */
+  grid-template-columns: minmax(0, 1fr);
+  place-items: center;
+}
+
+.auth-login-panel {
+  position: relative;
+  width: min(420px, 100%);
+  max-height: calc(100vh - 64px);
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 38px 40px 30px;
+  background: #fff;
+  border: 1px solid #dfe6e8;
+  border-radius: 10px;
+  box-shadow: 0 24px 64px rgba(15, 38, 46, .22);
+}
+
+.auth-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #8a9aa0;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.auth-modal-close:hover {
+  background: #f0f5f6;
+  color: #1d454b;
+}
+
+.auth-brand-mark {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #0c7773;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.auth-login-panel h1 {
+  margin: 18px 0 0;
+  color: #18353d;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.auth-login-subtitle {
+  margin: 8px 0 20px;
+  color: #6f7f84;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* 页签 */
+.auth-tabs {
+  display: flex;
+  gap: 26px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid #e7edef;
+}
+
+.auth-tab {
+  padding: 0 2px 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #6f7f84;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-tab.is-active {
+  border-bottom-color: #0c7773;
+  color: #0c7773;
+}
+
+/* 表单 */
+.auth-form {
+  display: none;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.auth-form.is-active {
+  display: grid;
+}
+
+.auth-input-group {
+  display: grid;
+  gap: 8px;
+  color: #31464d;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.auth-input-group input,
+.auth-inline-row input {
+  width: 100%;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid #ccd8da;
+  border-radius: 4px;
+  outline: none;
+  background: #fff;
+  color: #1f3136;
+  font: inherit;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+.auth-input-group input:focus,
+.auth-inline-row input:focus {
+  border-color: #0c7773;
+  box-shadow: 0 0 0 3px rgba(12, 119, 115, .12);
+}
+
+.auth-input-group input::placeholder,
+.auth-inline-row input::placeholder {
+  color: #a0adb0;
+}
+
+.auth-inline-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-inline-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.auth-inline-row canvas {
+  flex: 0 0 auto;
+  width: 110px;
+  height: 42px;
+  border: 1px solid #ccd8da;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.auth-code-button {
+  flex: 0 0 auto;
+  min-width: 108px;
+  min-height: 44px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #0c7773;
+  border-radius: 4px;
+  background: #fff;
+  color: #0c7773;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .18s, color .18s;
+}
+
+.auth-code-button:hover {
+  background: #eef7f6;
+}
+
+.auth-code-button:disabled {
+  border-color: #ccd8da;
+  background: #f5f8f8;
+  color: #9aa8aa;
+  cursor: not-allowed;
+}
+
+.auth-primary-button {
+  min-height: 46px;
+  border: 0;
+  border-radius: 4px;
+  background: #0c7773;
+  color: #fff;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .18s, transform .18s;
+}
+
+.auth-primary-button:hover {
+  background: #075e5b;
+}
+
+.auth-primary-button:active {
+  transform: translateY(1px);
+}
+
+.auth-form-error {
+  min-height: 18px;
+  margin: -4px 0;
+  color: #c5524c;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.auth-form-error:not(.has-error) {
+  visibility: hidden;
+}
+
+/* 协议勾选 */
+.auth-check {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: #53676c;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.auth-check input {
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  flex: 0 0 auto;
+  accent-color: #0c7773;
+}
+
+.auth-check a {
+  color: #0c7773;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-check a:hover {
+  text-decoration: underline;
+}
+
+.auth-agreement {
+  margin-top: 2px;
+}
+
+.auth-login-footnote {
+  margin: 4px 0 0;
+  color: #9aa8aa;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* ---------- 开通服务对话框 ---------- */
+.account-dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 10003;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 24px;
+  pointer-events: auto;
+  background: rgba(24, 43, 48, .36);
+}
+
+.account-dialog-layer.is-open {
+  display: flex;
+}
+
+.account-dialog {
+  width: min(430px, 100%);
+  box-sizing: border-box;
+  padding: 28px 30px 26px;
+  background: #fff;
+  border: 1px solid #dbe4e5;
+  border-radius: 8px;
+  box-shadow: 0 22px 55px rgba(19, 41, 47, .2);
+}
+
+.account-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 8px;
+}
+
+.account-dialog-header .dialog-eyebrow {
+  margin: 0 0 7px;
+}
+
+.account-dialog-header h2 {
+  margin: 0;
+  color: #1b353b;
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.dialog-eyebrow {
+  margin: 0;
+  color: #698087;
+  font-size: 12px;
+  letter-spacing: 1.2px;
+}
+
+.dialog-close {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: #7a8b8e;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dialog-close:hover {
+  color: #1d454b;
+}
+
+.dialog-description {
+  margin: 0 0 14px;
+  color: #55676d;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.upgrade-benefit-list {
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  border: 1px solid #d9ece9;
+  border-radius: 8px;
+  background: #f2faf9;
+}
+
+.upgrade-benefit-list span {
+  color: #0c7773;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.upgrade-benefit-list ul {
+  margin: 8px 0 0;
+  padding: 0 0 0 18px;
+  color: #3e585f;
+  font-size: 13px;
+  line-height: 1.9;
+}
+
+.upgrade-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.upgrade-secondary-button {
+  flex: 1 1 50%;
+  min-height: 46px;
+  border: 1px solid #0c7773;
+  border-radius: 4px;
+  background: #fff;
+  color: #0c7773;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.upgrade-secondary-button:hover {
+  background: #eef7f6;
+}
+
+.upgrade-primary-button {
+  flex: 1 1 50%;
+}
+
+.auth-upgrade-note {
+  margin: 12px 0 0;
+  color: #9aa8aa;
+  font-size: 11.5px;
+  text-align: center;
+}
+
+/* ---------- 头像菜单 ---------- */
+.account-menu {
+  position: fixed;
+  z-index: 10002;
+  display: none;
+  width: 238px;
+  box-sizing: border-box;
+  padding: 8px;
+  pointer-events: auto;
+  background: #fff;
+  border: 1px solid #dbe4e5;
+  border-radius: 6px;
+  box-shadow: 0 14px 35px rgba(27, 48, 54, .16);
+}
+
+.account-menu.is-open {
+  display: block;
+}
+
+.account-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 10px 12px;
+}
+
+.account-menu-avatar {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #d8efec;
+  color: #0c7773;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.account-menu-header div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.account-menu-header strong {
+  overflow: hidden;
+  color: #21383e;
+  font-size: 14px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-menu-header small {
+  color: #849599;
+  font-size: 12px;
+}
+
+.account-menu-divider {
+  height: 1px;
+  margin: 3px 2px;
+  background: #edf1f1;
+}
+
+.account-menu-item {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #31464d;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.account-menu-item .ui-icon {
+  flex: 0 0 auto;
+  color: #789093;
+}
+
+.account-menu-item:hover {
+  background: #f0f7f6;
+  color: #0c7773;
+}
+
+.account-menu-logout {
+  color: #b34d47;
+}
+
+.account-menu-logout:hover {
+  background: #fff3f2;
+  color: #a03d37;
+}
+
+@media (max-width: 640px) {
+  .auth-login-view {
+    padding: 18px;
+  }
+
+  .auth-login-panel {
+    padding: 32px 22px 24px;
+  }
+
+  .upgrade-actions {
+    flex-direction: column;
+  }
+
+  .account-dialog {
+    padding: 24px 20px;
+  }
+}
+
+/* ---------- 账号菜单：二级子菜单 ---------- */
+.account-menu-parent {
+  position: relative;
+}
+
+.account-menu-parent .account-menu-caret {
+  margin-left: auto;
+  color: #9fb0b3;
+  transition: transform .18s ease;
+}
+
+.account-menu-parent.is-expanded .account-menu-caret {
+  transform: rotate(180deg);
+}
+
+.account-menu-sub[hidden] {
+  display: none;
+}
+
+.account-menu-sub {
+  display: grid;
+  padding: 4px 0 2px;
+  margin: 4px 0 2px;
+  border-radius: 6px;
+  background: #f5f9f8;
+}
+
+.account-menu-subitem {
+  min-height: 36px;
+  padding-left: 32px;
+  font-size: 13.5px;
+}
+
+.account-menu-subitem[hidden] {
+  display: none;
+}
+
+/* ---------- 账号管理弹窗（用户名 / 变更手机号 / 修改密码） ---------- */
+.account-dialog-compact {
+  width: min(400px, 100%);
+  padding: 24px 26px 22px;
+}
+
+.account-dialog-header h2 {
+  font-size: 18px;
+}
+
+.account-dialog-body {
+  display: grid;
+  gap: 10px;
+  padding-top: 6px;
+}
+
+.account-dialog-input {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 0 13px;
+  border: 1px solid #dbe4e5;
+  border-radius: 4px;
+  background: #fff;
+  color: #21383e;
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.account-dialog-input:focus {
+  border-color: #2b87d8;
+}
+
+.account-dialog-input::placeholder {
+  color: #a5b3b6;
+}
+
+.account-dialog-hint {
+  margin: 2px 0 0;
+  color: #e8932c;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.account-dialog-note {
+  margin: 2px 0 0;
+  color: #98a7aa;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.account-dialog-error {
+  margin: 0;
+  min-height: 16px;
+  color: #d64541;
+  font-size: 12.5px;
+}
+
+.account-dialog-error.has-error {
+  margin: 2px 0 4px;
+}
+
+.account-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.account-dialog-secondary {
+  min-width: 96px;
+  min-height: 40px;
+  border: 1px solid #dbe4e5;
+  border-radius: 4px;
+  background: #fff;
+  color: #46585c;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.account-dialog-secondary:hover {
+  border-color: #b7c9cb;
+  background: #f5f9f8;
+}
+
+.account-dialog-primary {
+  min-width: 96px;
+  min-height: 40px;
+  border: 0;
+  border-radius: 4px;
+  background: #1677ff;
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+
+.account-dialog-primary:hover {
+  background: #3c8dff;
+}
+
+.account-dialog-primary:disabled {
+  background: #a8c7f0;
+  cursor: not-allowed;
+}
+
+.account-dialog-block {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 4px;
+}
+
+/* 步骤条 */
+.account-stepper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0 18px;
+  font-size: 13px;
+}
+
+.account-stepper span {
+  color: #a5b3b6;
+  white-space: nowrap;
+}
+
+.account-stepper span.is-current,
+.account-stepper span.is-done {
+  color: #1677ff;
+}
+
+.account-stepper span.is-done::after {
+  content: ' ✓';
+}
+
+.account-stepper i {
+  flex: 1 1 auto;
+  height: 1px;
+  background: #dbe4e5;
+}
+
+.account-stepper span.is-current ~ i,
+.account-stepper span.is-done + i {
+  background: #1677ff;
+}
+
+/* 当前手机号 */
+.account-bind-line {
+  margin: 0 0 8px;
+  color: #55676d;
+  font-size: 13px;
+}
+
+.account-bind-phone {
+  margin: 0 0 16px;
+  color: #1677ff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* 图形验证码行 */
+.account-captcha-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.account-captcha-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 40px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid #dbe4e5;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 13.5px;
+  outline: none;
+}
+
+.account-captcha-row input:focus {
+  border-color: #2b87d8;
+}
+
+.account-captcha-row canvas {
+  flex: 0 0 auto;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* 短信验证码行 */
+.account-sms-row {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  margin-bottom: 4px;
+  border: 1px solid #dbe4e5;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.account-sms-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 38px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 0;
+  font: inherit;
+  font-size: 13.5px;
+  outline: none;
+  background: transparent;
+}
+
+.account-sms-row button {
+  flex: 0 0 auto;
+  min-height: 28px;
+  padding: 0 12px;
+  margin-right: 6px;
+  border: 0;
+  border-left: 1px solid #e7edef;
+  border-radius: 0;
+  background: transparent;
+  color: #1677ff;
+  font: inherit;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.account-sms-row button:hover {
+  color: #3c8dff;
+}
+
+.account-sms-row button:disabled {
+  color: #a5b3b6;
+  cursor: not-allowed;
+}
+
+/* 弹窗步骤容器：输入框之间保持间距 */
+.account-dialog-step {
+  display: grid;
+  gap: 14px;
+}
+
+.account-dialog-step .account-dialog-error {
+  margin: -6px 0 0;
+}
+
+.account-dialog-step .account-dialog-note {
+  margin: -8px 0 0;
+}
+
+.account-dialog-step .account-dialog-block {
+  margin-top: 2px;
+}
+
+.account-dialog-step[hidden] {
+  display: none;
+}

@@ -1,0 +1,1185 @@
+/* 五度易链 · 运营管理后台（演示原型）
+ * 设计规范参照 API 开放平台运营后台：全宽白色顶栏 + 面包屑、白色侧边栏、
+ * 浅灰内容区、扁平细边框表格、蓝色主按钮、行内操作按钮
+ */
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+  background: #f5f7fa;
+  color: #1f2329;
+  font-size: 14px;
+}
+
+button { font: inherit; cursor: pointer; }
+
+/* ---------- 顶栏 ---------- */
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  min-height: 52px;
+  padding: 0 20px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.admin-topbar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+
+.admin-brand-logo {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2d79bd, #19b3a2);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.admin-brand-name { font-size: 15px; color: #1f2329; letter-spacing: .5px; }
+
+.admin-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 14px;
+  padding-left: 16px;
+  border-left: 1px solid #e5e6eb;
+  font-size: 13px;
+  color: #86909c;
+  white-space: nowrap;
+}
+
+.admin-breadcrumb em { font-style: normal; color: #86909c; }
+.admin-breadcrumb i { font-style: normal; color: #c9cdd4; }
+.admin-breadcrumb b { font-weight: 500; color: #1f2329; }
+
+.admin-topbar-user { display: flex; align-items: center; gap: 10px; }
+
+.admin-topbar-avatar {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #e8f3ff;
+  color: #1677ff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-topbar-user strong { font-size: 13px; color: #1f2329; }
+
+.admin-topbar-role {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f2f3f5;
+  color: #86909c;
+  font-size: 11.5px;
+}
+
+.admin-logout {
+  padding: 5px 12px;
+  border: 1px solid #e5e6eb;
+  border-radius: 4px;
+  background: #fff;
+  color: #4e5969;
+  font-size: 12.5px;
+  transition: color .15s ease, border-color .15s ease;
+}
+
+.admin-logout:hover { border-color: #1677ff; color: #1677ff; }
+
+/* ---------- 布局 ---------- */
+.admin-shell { display: flex; align-items: stretch; min-height: calc(100vh - 52px); }
+
+/* 侧边栏（白色） */
+.admin-sidebar {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 1px solid #f0f0f0;
+}
+
+.admin-nav { flex: 1 1 auto; padding: 12px 8px; display: grid; gap: 2px; align-content: start; }
+
+.admin-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #4e5969;
+  font-size: 13.5px;
+  text-align: left;
+  transition: background .15s ease, color .15s ease;
+}
+
+.admin-nav-item svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: 0 0 auto; }
+
+.admin-nav-item:hover { background: #f2f3f5; color: #1f2329; }
+
+.admin-nav-item.is-active { background: #e8f3ff; color: #1677ff; font-weight: 600; }
+
+/* 一级导航分组 + 二级菜单 */
+.admin-nav-group { display: grid; gap: 2px; }
+.admin-nav-parent { position: relative; }
+.admin-nav-caret { margin-left: auto; width: 14px !important; height: 14px !important; flex: 0 0 14px !important; stroke-width: 1.6 !important; color: #a9aeb8; transition: transform .18s ease; }
+.admin-nav-parent.is-open .admin-nav-caret { transform: rotate(180deg); }
+.admin-nav-parent.is-active .admin-nav-caret { color: #1677ff; }
+.admin-nav-sub { display: grid; gap: 2px; padding: 2px 0 4px; }
+.admin-nav-sub[hidden] { display: none; }
+.admin-nav-subitem {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 14px 0 38px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #4e5969;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.admin-nav-subitem:hover { background: #f7f8fa; color: #1f2329; }
+.admin-nav-subitem.is-active { background: #f2f8ff; color: #1677ff; font-weight: 500; }
+.admin-nav-dot { width: 4px; height: 4px; flex: 0 0 4px; border-radius: 50%; background: #c9cdd4; transition: background .15s ease; }
+.admin-nav-subitem:hover .admin-nav-dot { background: #86909c; }
+.admin-nav-subitem.is-active .admin-nav-dot { background: #1677ff; }
+
+.admin-sidebar-footer { padding: 10px 8px 14px; border-top: 1px solid #f0f0f0; }
+
+.admin-back-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 4px;
+  color: #4e5969;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.admin-back-link svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.admin-back-link:hover { background: #f2f3f5; color: #1f2329; }
+
+/* 主区域 */
+.admin-main { flex: 1 1 auto; min-width: 0; padding: 18px 24px 36px; }
+
+.admin-page-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.admin-page-head h1 { margin: 0; font-size: 18px; font-weight: 600; color: #1f2329; }
+
+.admin-page-actions { display: flex; gap: 8px; }
+
+.admin-content { min-width: 0; }
+
+.admin-view { display: none; }
+.admin-view.is-active { display: block; }
+
+.admin-toolbar-tip { margin: 0 0 14px; color: #86909c; font-size: 12.5px; line-height: 1.7; }
+
+/* ---------- 产业链价格 ---------- */
+.admin-price-table { table-layout: fixed; width: 100%; }
+.admin-price-table .th-name { width: 300px; }
+.admin-price-table .th-category { width: 140px; }
+.admin-price-table .th-price { width: 130px; }
+.admin-price-table .th-time { width: 150px; }
+.admin-price-table .th-count { width: 108px; }
+.admin-price-table .th-op { width: 100px; }
+.admin-price-table th, .admin-price-table td { overflow-wrap: anywhere; }
+.admin-price-table td:nth-child(4), .admin-price-table td:nth-child(5) { white-space: nowrap; }
+/* 所属分类：与图谱列表的分类名保持一致，单行展示避免高度抖动 */
+.admin-price-table .admin-price-category { white-space: nowrap; }
+.admin-price-value { color: #1f2329; font-weight: 500; }
+.admin-price-none { color: #c9cdd4; }
+.admin-price-foot { padding: 12px 16px 4px; color: #86909c; font-size: 12px; }
+.admin-dialog-price { width: min(500px, calc(100vw - 32px)); }
+.admin-confirm-row.is-input { align-items: center; }
+.admin-confirm-row.is-input em { color: #f53f3f; font-style: normal; margin-left: 2px; }
+.admin-price-input { display: flex; align-items: center; gap: 8px; }
+.admin-price-input input {
+  width: 148px; height: 32px; padding: 0 10px; border: 1px solid #e5e6eb; border-radius: 4px;
+  background: #fff; color: #1f2329; font: inherit; font-size: 13px; text-align: right; outline: none;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.admin-price-input input::-webkit-outer-spin-button,
+.admin-price-input input::-webkit-inner-spin-button { margin: 0; -webkit-appearance: none; appearance: none; }
+.admin-price-input input:focus { border-color: #1677ff; }
+.admin-price-input i { color: #86909c; font-size: 12.5px; font-style: normal; white-space: nowrap; }
+.admin-price-preview { margin: 12px 0 0; padding: 9px 12px; border-radius: 4px; background: #f7f8fa; color: #4e5969; font-size: 12.5px; line-height: 1.6; }
+.admin-price-preview b { color: #1677ff; font-weight: 500; }
+.admin-price-warn { color: #f53f3f; }
+.admin-price-note {
+  margin: 8px 0 0; padding: 0 2px; color: #86909c; font-size: 12px; line-height: 1.6;
+}
+.admin-price-note b { color: #4e5969; font-weight: 500; }
+/* 已开通服务的成交价：与当前标价不同时，主价加粗、现价同行小字灰显，避免撑高行高 */
+.admin-deal-price { color: #1f2329; font-weight: 500; white-space: nowrap; }
+.admin-deal-now { margin-left: 5px; color: #a9aeb8; font-size: 11px; font-style: normal; white-space: nowrap; }
+/* 服务状态：圆点 + 文字（绿=生效中、红=已到期），开通服务管理与用户详情共用 */
+.admin-svc-status { display: inline-flex; align-items: center; gap: 6px; color: #1f2329; font-size: 12.5px; white-space: nowrap; }
+.admin-svc-status i { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: #00b42a; }
+.admin-svc-status.is-expired { color: #86909c; }
+.admin-svc-status.is-expired i { background: #f53f3f; }
+.admin-price-users { max-height: 340px; margin-top: 4px; overflow-y: auto; display: grid; gap: 8px; }
+.admin-price-user {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 9px 12px; border-radius: 4px; background: #f7f8fa; font-size: 12.5px;
+}
+.admin-price-user-main { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.admin-price-user-main b { color: #1f2329; font-weight: 500; }
+.admin-price-user-main span { color: #86909c; font-size: 12px; }
+.admin-price-user-tag { padding: 1px 5px; border-radius: 3px; background: #fff2f0; color: #f53f3f; font-size: 11px; font-style: normal; line-height: 1.4; white-space: nowrap; }
+.admin-price-user-meta { display: flex; flex: 0 0 auto; align-items: baseline; gap: 10px; color: #4e5969; white-space: nowrap; }
+.admin-price-user-meta span { color: #86909c; font-size: 12px; }
+/* 开通用户弹窗里的成交单价：与当前标价不一致（调价后已冻结）时标灰提示 */
+.admin-price-user-meta .admin-price-user-price { color: #1f2329; font-weight: 500; }
+.admin-price-user-meta .admin-price-user-price.is-frozen { color: #86909c; font-weight: 400; }
+.admin-price-user-meta .admin-price-user-term { color: #4e5969; font-size: 12.5px; }
+/* 中等宽度：先收窄固定列，保证产业链名称不被挤没 */
+@media (max-width: 1280px) {
+  .admin-price-table .th-name { width: auto; }
+}
+@media (max-width: 1024px) {
+  .admin-price-table .th-category { width: 116px; }
+  .admin-price-table .th-price { width: 110px; }
+  .admin-price-table .th-time { width: 124px; }
+  .admin-price-table .th-count { width: 96px; }
+  .admin-price-table .th-op { width: 92px; }
+}
+@media (max-width: 900px) {
+  .admin-price-table th, .admin-price-table td { padding: 9px 5px; font-size: 11.5px; }
+  .admin-price-table .th-category { width: 84px; }
+  .admin-price-table .th-price { width: 74px; }
+  .admin-price-table .th-time { width: 74px; }
+  .admin-price-table .th-count { width: 62px; }
+  .admin-price-table .th-op { width: 64px; }
+  /* 窄屏分类名放不下时折行，避免压到价格列 */
+  .admin-price-table td.admin-price-category { white-space: normal; }
+}
+
+/* ---------- 内容块（扁平白色表格容器，浅圆角细边） ---------- */
+.admin-block {
+  margin-bottom: 14px;
+  padding: 0 0 6px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.admin-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 16px 3px;
+}
+
+.admin-block-head h2 { margin: 0; font-size: 14.5px; font-weight: 600; color: #1f2329; }
+
+.admin-block-foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-top: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.admin-foot-space { flex: 1 1 auto; }
+
+/* ---------- 按钮 ---------- */
+.admin-btn {
+  padding: 6px 15px;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  background: #fff;
+  color: #4e5969;
+  font-size: 12.5px;
+  white-space: nowrap;
+  transition: all .15s ease;
+}
+
+.admin-btn:hover { border-color: #1677ff; color: #1677ff; }
+
+.admin-btn-primary { border-color: #1677ff; background: #1677ff; color: #fff; transition: background .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.admin-btn-primary:hover { background: #4096ff; border-color: #4096ff; color: #fff; }
+
+/* 主操作按钮弱化态（无改动时）与高亮态（有改动时） */
+.admin-btn-primary:disabled {
+  border-color: #e5e6eb;
+  background: #f2f3f5;
+  color: #b4b8c0;
+  cursor: not-allowed;
+}
+
+.admin-btn-primary:disabled:hover { background: #f2f3f5; border-color: #e5e6eb; color: #b4b8c0; }
+
+.admin-btn-primary:not(:disabled) { box-shadow: 0 2px 8px rgba(22, 119, 255, .28); }
+
+.admin-btn-danger { border-color: #ff4d4f; background: #ff4d4f; color: #fff; }
+.admin-btn-danger:hover { background: #ff7875; border-color: #ff7875; color: #fff; }
+
+.admin-btn-mini { padding: 3px 10px; font-size: 12px; }
+
+/* 行内操作按钮（图标式）：浅灰描边方块，参考工具条图标按钮样式 */
+.admin-row-btn {
+  width: 28px;
+  height: 28px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #dcdfe6;
+  border-radius: 5px;
+  background: #fff;
+  color: #4e5969;
+  transition: border-color .15s ease, background .15s ease, color .15s ease;
+}
+
+.admin-row-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.admin-row-btn:hover { border-color: #1677ff; background: #f2f8ff; color: #1677ff; }
+
+.admin-row-btn.is-danger:hover { border-color: #ff4d4f; background: #fff2f0; color: #ff4d4f; }
+
+.admin-row-btn:disabled { opacity: .45; cursor: not-allowed; border-color: #e5e6eb; background: #fff; color: #c9cdd4; }
+
+/* 文字式行内操作 */
+.admin-link-btn {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #1677ff;
+  font-size: 12.5px;
+}
+
+.admin-link-btn:hover { color: #4096ff; }
+
+.admin-link-btn.is-danger { color: #ff4d4f; }
+.admin-link-btn.is-danger:hover { color: #ff7875; }
+
+/* ---------- 表格 ---------- */
+.admin-table-tools { display: flex; align-items: center; gap: 10px; padding: 14px 16px 14px; }
+
+.admin-table-tools input { width: 260px; min-height: 32px; padding: 0 12px; border: 1px solid #e5e6eb; border-radius: 4px; font: inherit; font-size: 13px; outline: none; transition: border-color .15s ease; }
+
+.admin-table-tools input:focus { border-color: #1677ff; }
+
+.admin-table-wrap { overflow-x: auto; }
+
+.admin-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+
+.admin-table th, .admin-table td { padding: 9px 14px; text-align: left; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+
+.admin-table th { color: #4e5969; font-weight: 600; background: #fafafa; }
+
+.admin-table td { color: #1f2329; }
+
+.admin-table tbody tr:hover { background: #f7faff; }
+
+.admin-table tbody tr:last-child td { border-bottom: 0; }
+
+.admin-table .td-sub { color: #86909c; font-size: 12px; }
+
+.th-order { width: 76px; }
+.th-uid { width: 92px; }
+.th-op { width: 120px; }
+
+.admin-table-count { margin: 8px 16px 6px; color: #86909c; font-size: 12px; text-align: right; }
+
+/* 状态徽章（圆点式） */
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+}
+
+.admin-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.admin-badge.paid { background: #fff7e6; color: #d48806; }
+.admin-badge.registered { background: #e8f3ff; color: #1677ff; }
+.admin-badge.ok { background: #f6ffed; color: #52c41a; }
+.admin-badge.disabled { background: #fff2f0; color: #ff4d4f; }
+
+.admin-cell-actions { display: inline-flex; align-items: center; gap: 4px; }
+
+.admin-empty { margin: 18px 0; color: #86909c; font-size: 13px; text-align: center; }
+
+/* 权限配置表 */
+.admin-perm-table input[type="checkbox"] { width: 15px; height: 15px; accent-color: #1677ff; cursor: pointer; }
+
+/* ---------- 产业图谱管理表格 ---------- */
+.admin-graph-table td { white-space: normal; }
+
+.admin-chain-name { font-size: 13px; color: #1f2329; }
+
+.admin-chain-hidden .admin-chain-name { color: #c9cdd4; text-decoration: line-through; }
+
+.admin-icon-cell { display: flex; align-items: center; gap: 6px; }
+
+/* 图标预览内图片（本地上传） */
+.admin-icon-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 3px; }
+
+/* 图标上传 / 清除小按钮 */
+.admin-btn-mini { min-height: 26px; padding: 0 10px; font-size: 12px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #4e5969; }
+
+.admin-btn-mini:hover { border-color: #1677ff; color: #1677ff; }
+
+.admin-btn-plain { border-color: transparent; color: #86909c; }
+
+.admin-btn-plain:hover { color: #ff4d4f; border-color: transparent; }
+
+.admin-icon-preview {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #d0e2fb;
+  border-radius: 4px;
+  background: #f4f9ff;
+  color: #1677ff;
+  flex: 0 0 auto;
+}
+
+.admin-icon-preview svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.admin-select {
+  min-height: 30px;
+  max-width: 150px;
+  padding: 0 8px;
+  border: 1px solid #e5e6eb;
+  border-radius: 4px;
+  background: #fff;
+  color: #4e5969;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.admin-select:focus { border-color: #1677ff; }
+
+.admin-tagcell { min-width: 220px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+
+.admin-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px 2px 10px;
+  border-radius: 999px;
+  background: #fff7e6;
+  color: #d48806;
+  font-size: 12px;
+}
+
+.admin-tag button { width: 15px; height: 15px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(212, 136, 6, .18); color: #d48806; font-size: 11px; line-height: 1; }
+
+.admin-tag button:hover { background: #d48806; color: #fff; }
+
+.admin-tag-add { display: flex; align-items: center; gap: 5px; }
+
+.admin-tag-add input { width: 110px; min-height: 28px; padding: 0 9px; border: 1px solid #e5e6eb; border-radius: 4px; font: inherit; font-size: 12px; outline: none; transition: border-color .15s ease; }
+
+.admin-tag-add input:focus { border-color: #1677ff; }
+
+.admin-tag-add button { padding: 4px 11px; border: 1px solid #d9d9d9; border-radius: 4px; background: #fff; color: #4e5969; font-size: 12px; transition: all .15s ease; }
+
+.admin-tag-add button:hover { border-color: #1677ff; color: #1677ff; }
+
+/* 展示/隐藏开关 */
+.admin-switch { position: relative; display: inline-flex; align-items: center; vertical-align: middle; width: 40px; height: 22px; }
+
+.admin-switch input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; z-index: 1; }
+
+.admin-switch i { position: absolute; inset: 0; border-radius: 999px; background: #c9cdd4; transition: background .18s ease; }
+
+.admin-switch i::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(31, 35, 41, .22);
+  transition: transform .18s ease;
+}
+
+.admin-switch input:checked + i { background: #1677ff; }
+
+.admin-switch input:checked + i::after { transform: translateX(18px); }
+
+.admin-switch-label { margin-left: 8px; font-size: 12px; color: #86909c; }
+
+/* ---------- 首页管理 ---------- */
+#hotwordInput { width: 260px; min-height: 32px; padding: 0 12px; border: 1px solid #e5e6eb; border-radius: 4px; font: inherit; font-size: 13px; outline: none; transition: border-color .15s ease; }
+
+#hotwordInput:focus { border-color: #1677ff; }
+
+/* ---------- 弹窗 ---------- */
+.admin-dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(31, 35, 41, .45);
+}
+
+.admin-dialog-layer.is-open { display: flex; }
+
+/* 服务开通/取消等确认类子弹窗可能从「用户详情」抽屉中唤起，需盖过详情抽屉（DOM 顺序在其之前） */
+#serviceOpenDialogLayer, #serviceBatchOpenLayer, #serviceCancelLayer { z-index: 220; }
+
+.admin-dialog {
+  width: min(480px, 100%);
+  max-height: 82vh;
+  overflow-y: auto;
+  padding: 20px 24px 22px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 22px 55px rgba(31, 35, 41, .25);
+}
+
+.admin-dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+.admin-dialog-head h3 { margin: 0; font-size: 16px; color: #1f2329; }
+
+.admin-dialog-close { width: 30px; height: 30px; border: 0; background: transparent; color: #86909c; font-size: 24px; line-height: 1; }
+
+.admin-dialog-close:hover { color: #1677ff; }
+
+.admin-dialog-sub { margin: 8px 0 0; color: #86909c; font-size: 12.5px; }
+
+.admin-dialog-foot { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+/* 开通服务清单 */
+.admin-chain-checklist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 14px; margin-top: 14px; max-height: 300px; overflow-y: auto; }
+
+.admin-chain-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #1f2329;
+  cursor: pointer;
+}
+
+.admin-chain-checklist label:hover { background: #f7faff; }
+
+.admin-chain-checklist input { accent-color: #1677ff; }
+
+/* 新增账号表单 */
+.admin-form { display: grid; gap: 12px; margin-top: 16px; }
+
+.admin-form label { display: grid; gap: 6px; font-size: 12.5px; color: #4e5969; }
+
+.admin-form input, .admin-form select {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #e5e6eb;
+  border-radius: 4px;
+  font: inherit;
+  font-size: 13px;
+  color: #1f2329;
+  outline: none;
+  transition: border-color .15s ease;
+}
+
+.admin-form input:focus, .admin-form select:focus { border-color: #1677ff; }
+
+/* ---------- Toast ---------- */
+.admin-toast {
+  position: fixed;
+  left: 50%;
+  bottom: 34px;
+  z-index: 300;
+  padding: 10px 22px;
+  border-radius: 4px;
+  background: rgba(31, 35, 41, .92);
+  color: #fff;
+  font-size: 13px;
+  opacity: 0;
+  transform: translate(-50%, 8px);
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: none;
+}
+
+.admin-toast.is-visible { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- 无权限 ---------- */
+.admin-no-perm {
+  margin: 80px auto;
+  max-width: 420px;
+  padding: 36px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background: #fff;
+  text-align: center;
+}
+
+.admin-no-perm h2 { margin: 0 0 10px; font-size: 17px; color: #1f2329; }
+.admin-no-perm p { margin: 0 0 20px; color: #86909c; font-size: 13px; }
+
+@media (max-width: 900px) {
+  .admin-sidebar { flex-basis: 64px; }
+  .admin-nav-item span, .admin-back-link span, .admin-breadcrumb { display: none; }
+  .admin-nav-item, .admin-back-link { justify-content: center; padding: 0; }
+  /* 窄屏侧栏收窄：一级导航只留图标，二级菜单改为圆点式指示 */
+  .admin-nav-caret { display: none; }
+  .admin-nav-subitem { justify-content: center; min-height: 28px; padding: 0; }
+  .admin-nav-subitem span { display: none; }
+  .admin-nav-dot { width: 6px; height: 6px; flex-basis: 6px; }
+  .admin-nav-subitem.is-active { background: transparent; }
+  .admin-main { padding: 14px 14px 28px; }
+}
+
+/* 分类产业链数量与管理 */
+.admin-count-num { font-weight: 600; color: #1f2329; }
+
+/* 图谱管理页签 */
+.admin-tabs {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid #e5e6eb;
+}
+.admin-tab {
+  position: relative;
+  padding: 10px 2px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #4e5969;
+}
+.admin-tab:hover { color: #1677ff; }
+.admin-tab.is-active { color: #1677ff; font-weight: 600; }
+.admin-tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: #1677ff;
+}
+
+/* 产业体系徽章（分类列表中三大体系的标识） */
+.admin-group-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e6f0ff;
+  border: 1px solid #b8d4ff;
+  color: #1677ff;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.6;
+  vertical-align: 1px;
+}
+
+/* 分类隐藏按钮悬浮警示色 */
+.admin-row-btn.is-warn:hover { background: #fff7e6; color: #d48806; }
+
+/* 分类产业链管理弹窗（表格化：序号/链名/图标/可见性/操作） */
+.admin-dialog-chains { width: min(680px, 100%); }
+
+.admin-dialog-table { margin-top: 14px; }
+
+.admin-dialog-table th:first-child, .admin-dialog-table td:first-child { padding-left: 4px; }
+
+.admin-dialog-table th:last-child, .admin-dialog-table td:last-child { padding-right: 4px; }
+
+.admin-dialog-table .admin-select { max-width: 150px; }
+
+/* ===== 用户管理：搜索栏 / 数量链接 / 分页 / 详情弹窗 ===== */
+.admin-tool-label { color: #4e5969; font-size: 13px; }
+.admin-tool-sep { color: #c9cdd4; font-style: normal; }
+.admin-date-input {
+  height: 32px; padding: 0 8px; border: 1px solid #e5e6eb; border-radius: 4px;
+  background: #fff; color: #1d2129; font-size: 13px; font-family: inherit;
+}
+.admin-date-input:hover { border-color: #c9cdd4; }
+.admin-date-input:focus { outline: none; border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22, 119, 255, .1); }
+
+.admin-count-link {
+  display: inline-flex; align-items: center; gap: 4px; padding: 0;
+  border: 0; background: transparent; color: #1677ff; font-size: 13px; cursor: pointer;
+}
+.admin-count-link svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.admin-count-link:hover { text-decoration: underline; }
+.admin-count-link.is-zero { color: #86909c; }
+
+.admin-pager {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 16px 4px; border-top: 1px solid #f2f3f5; margin-top: 8px;
+}
+.admin-pager-total { color: #86909c; font-size: 12.5px; }
+.admin-pager-btns { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.admin-pager-btn {
+  min-width: 30px; height: 30px; padding: 0 10px; border: 1px solid #e5e6eb; border-radius: 4px;
+  background: #fff; color: #4e5969; font-size: 13px; cursor: pointer;
+}
+.admin-pager-btn:hover:not(:disabled) { border-color: #1677ff; color: #1677ff; }
+.admin-pager-btn.is-active { background: #1677ff; border-color: #1677ff; color: #fff; }
+.admin-pager-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+.admin-dialog-divider {
+  display: flex; align-items: center; gap: 10px; margin-top: 16px;
+  color: #4e5969; font-size: 13px; font-weight: 600;
+}
+.admin-dialog-divider::before, .admin-dialog-divider::after {
+  content: ''; flex: 1; height: 1px; background: #e5e6eb;
+}
+
+.admin-dialog-text { margin: 10px 0 0; color: #4e5969; font-size: 13.5px; line-height: 1.7; }
+.admin-dialog-text b { color: #1d2129; }
+
+.admin-detail-list { margin-top: 14px; border: 1px solid #f2f3f5; border-radius: 6px; overflow: hidden; }
+.admin-detail-row {
+  display: flex; align-items: flex-start; gap: 14px; padding: 10px 14px;
+  font-size: 13px; border-bottom: 1px solid #f7f8fa;
+}
+.admin-detail-row:last-child { border-bottom: 0; }
+.admin-detail-row:nth-child(odd) { background: #fafbfc; }
+.admin-detail-row span { flex: 0 0 84px; color: #86909c; }
+.admin-detail-row b { color: #1d2129; font-weight: 500; }
+.admin-detail-row.is-block { flex-direction: column; gap: 8px; }
+.admin-detail-chains { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.admin-detail-chains li { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12.5px; }
+.admin-detail-chains li b { color: #1d2129; font-weight: 500; }
+.admin-detail-chains li span { color: #86909c; }
+.admin-detail-chains li.is-none { color: #86909c; justify-content: center; padding: 4px 0; }
+
+/* ===== 用户详情抽屉（右侧侧滑，基本信息 / 开通服务 / 订单列表 三页签） ===== */
+#userDetailDialogLayer { justify-content: flex-end; padding: 0; }
+#userDetailDialogLayer .admin-dialog {
+  display: flex; flex-direction: column;
+  width: min(1080px, 100vw); height: 100%; max-height: 100%;
+  padding: 0; overflow: hidden; border-radius: 0;
+  box-shadow: -8px 0 28px rgba(31, 35, 41, .14);
+  animation: service-drawer-enter .22s ease-out;
+}
+#userDetailDialogLayer .admin-dialog-head { flex: 0 0 auto; padding: 16px 20px 6px; }
+#userDetailDialogLayer .admin-dialog-head h3 { font-size: 16px; }
+#userDetailDialogLayer .admin-dialog-sub { flex: 0 0 auto; margin: 0; padding: 0 20px 14px; border-bottom: 1px solid #f2f3f5; color: #86909c; font-size: 12.5px; }
+#userDetailDialogLayer .admin-dialog-foot { flex: 0 0 auto; margin: 0; padding: 14px 20px; border-top: 1px solid #e5e6eb; background: #fff; }
+#userDetailDialogLayer .admin-detail-list { margin-top: 14px; border: 1px solid #f0f1f3; border-radius: 6px; overflow: hidden; }
+/* 基本信息顶部数据概览：开通服务 / 累计订单 / 累计实付 */
+.admin-user-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.admin-user-stat { padding: 14px 16px; border: 1px solid #f0f1f3; border-radius: 6px; background: #fafbfc; min-width: 0; }
+.admin-user-stat span { display: block; color: #86909c; font-size: 12px; line-height: 1.4; }
+.admin-user-stat b { display: block; margin-top: 6px; color: #1f2329; font-size: 20px; font-weight: 600; line-height: 1.2; }
+.admin-user-stat b em { margin-left: 3px; color: #86909c; font-size: 12px; font-style: normal; font-weight: 400; }
+.admin-user-stat.is-primary b { color: #1677ff; }
+
+/* 页签栏：与「开通服务管理」抽屉保持一致的视觉 */
+.admin-user-nav { flex: 0 0 auto; min-height: 46px; padding: 0 20px; }
+.admin-user-nav .admin-service-tabs { gap: 24px; }
+.admin-tab-count {
+  display: inline-block; min-width: 17px; margin-left: 5px; padding: 0 5px;
+  border-radius: 999px; background: #f2f3f5; color: #86909c;
+  font-size: 11px; font-style: normal; line-height: 17px; text-align: center;
+}
+.admin-service-tab.is-active .admin-tab-count { background: #e8f3ff; color: #1677ff; }
+.admin-user-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 20px 20px; }
+.admin-user-body .admin-service-panel { min-width: 0; }
+.admin-user-tip {
+  margin: 12px 0 0; padding: 8px 12px; border-radius: 4px;
+  background: #fffbe6; color: #d48806; font-size: 12px; line-height: 1.6;
+}
+.admin-user-tip b { font-weight: 500; }
+
+.admin-detail-table { width: 100%; margin: 0; }
+.admin-detail-table th {
+  padding: 9px 10px; background: #f7f8fa; color: #86909c; font-size: 12px; font-weight: 400; white-space: nowrap;
+}
+.admin-detail-table td { padding: 10px; font-size: 12.5px; color: #1f2329; border-bottom: 1px solid #f2f3f5; }
+.admin-detail-table tr:last-child td { border-bottom: 0; }
+.admin-detail-table .th-order { width: 56px; }
+.admin-detail-table .th-price-s { width: 130px; }
+.admin-detail-table .th-status { width: 84px; }
+.admin-detail-table .th-time { width: 132px; }
+.admin-detail-table .th-mini-op { width: 88px; }
+/* 抽屉内的表格：表头吸顶，纵向随内容滚动 */
+.admin-user-body .admin-detail-table { table-layout: fixed; }
+.admin-user-body .admin-detail-table thead th { position: sticky; top: 0; z-index: 2; box-shadow: inset 0 -1px 0 #e5e6eb; }
+.admin-chain-detail-table td.td-sub { white-space: nowrap; }
+.admin-chain-detail-table .admin-chain-name { color: #1f2329; white-space: normal; overflow-wrap: anywhere; }
+.admin-chain-detail-table th:first-child, .admin-chain-detail-table td:first-child { padding-left: 14px; }
+.admin-chain-detail-table th:last-child, .admin-chain-detail-table td:last-child { padding-right: 14px; }
+.admin-chain-detail-table .admin-deal-now { margin-left: 6px; }
+/* 已开通产业链过多时的折叠：默认展示前 N 条，其余点「展开全部」 */
+.admin-chain-more-row td { padding: 0 !important; border-bottom: 0 !important; }
+.admin-chain-more {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; margin: 0; padding: 12px 0; border: 0; border-top: 1px solid #f2f3f5;
+  background: transparent; color: #1677ff; font: inherit; font-size: 12.5px; cursor: pointer;
+  transition: background .15s ease;
+}
+.admin-chain-more:hover { background: #f7f9fc; }
+.admin-chain-more svg { width: 12px; height: 12px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; transition: transform .18s ease; }
+.admin-chain-more.is-collapse svg { transform: rotate(180deg); }
+
+/* 订单表：抽屉加宽后九列可完整展示，另加「操作」列 */
+.admin-detail-table .th-order-id { width: 140px; }
+.admin-detail-table .th-order-chains { width: 190px; }
+.admin-detail-table .th-order-term { width: 64px; }
+.admin-detail-table .th-order-money { width: 92px; }
+.admin-detail-table .th-order-pay { width: 78px; }
+.admin-detail-table .th-order-time { width: 118px; }
+.admin-detail-table .th-order-op { width: 84px; }
+.admin-order-table { min-width: 0; }
+.admin-order-table th, .admin-order-table td { padding-left: 7px; padding-right: 7px; }
+.admin-order-id { color: #4e5969; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11px; white-space: nowrap; }
+.admin-order-money { white-space: nowrap; color: #4e5969; }
+.admin-order-off { display: block; color: #ff9a2e; font-size: 11px; font-style: normal; line-height: 1.5; }
+.admin-order-paid { white-space: nowrap; color: #1f2329; font-weight: 500; }
+.admin-order-link { padding: 0; border: 0; background: transparent; color: #1677ff; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.admin-order-link:hover { text-decoration: underline; }
+.admin-svc-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.admin-svc-tag {
+  display: inline-block; flex: 0 0 auto; max-width: 100%; padding: 1px 6px;
+  border: 1px solid #d6e8ff; border-radius: 4px; background: #f2f8ff;
+  color: #1677ff; font-size: 11.5px; line-height: 1.65;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.admin-svc-tag.is-more { border-color: #e5e6eb; background: #f7f8fa; color: #86909c; }
+.admin-detail-empty { margin: 0; padding: 24px 0; color: #a9aeb8; font-size: 12.5px; text-align: center; }
+.admin-detail-none { color: #c9cdd4; }
+.admin-badge.warn { background: #fff7e6; color: #d48806; }
+.admin-badge.off { background: #f2f3f5; color: #86909c; }
+
+/* ===== 订单详情弹窗 ===== */
+.admin-dialog-order { width: min(720px, calc(100vw - 32px)); }
+.admin-order-detail-body { max-height: min(62vh, 560px); overflow-y: auto; }
+.admin-od-summary { margin-top: 14px; padding: 14px 16px; border-radius: 6px; background: #f7f8fa; display: grid; gap: 10px; }
+.admin-od-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; font-size: 13px; }
+.admin-od-row > span { flex: 0 0 auto; color: #86909c; }
+.admin-od-row > b { flex: 1 1 auto; min-width: 0; color: #1f2329; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
+.admin-od-row > b.is-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+.admin-od-row em { color: #ff9a2e; font-style: normal; font-size: 12px; }
+.admin-od-paid { color: #f53f3f !important; font-size: 15px; }
+.admin-od-title { display: flex; align-items: baseline; gap: 8px; margin: 18px 0 8px; color: #1f2329; font-size: 13px; font-weight: 600; }
+.admin-od-title::before { content: ''; width: 3px; height: 12px; border-radius: 2px; background: #1677ff; transform: translateY(1px); }
+.admin-od-title span { color: #86909c; font-size: 12px; font-weight: 400; }
+.admin-od-table { margin: 0; border: 1px solid #f0f1f3; border-radius: 6px; overflow: hidden; }
+.admin-od-table th { padding: 9px 12px; background: #f7f8fa; color: #86909c; font-size: 12px; font-weight: 400; white-space: nowrap; }
+.admin-od-table td { padding: 10px 12px; font-size: 12.5px; color: #1f2329; border-bottom: 1px solid #f2f3f5; }
+.admin-od-table tr:last-child td { border-bottom: 0; }
+.admin-od-table .is-num { white-space: nowrap; }
+.admin-od-total {
+  display: flex; align-items: baseline; justify-content: flex-end; gap: 16px;
+  margin-top: 12px; padding: 12px 16px; border-radius: 6px; background: #f7f8fa; font-size: 13px;
+}
+.admin-od-total span { color: #86909c; }
+.admin-od-total b { color: #1f2329; font-size: 16px; font-weight: 600; }
+.admin-od-total del { color: #a9aeb8; font-size: 12.5px; }
+
+/* 窄屏：抽屉铺满宽度，列表按需精简列避免挤压 */
+@media (max-width: 860px) {
+  #userDetailDialogLayer .admin-dialog-head { padding-right: 16px; padding-left: 16px; }
+  #userDetailDialogLayer .admin-dialog-sub { padding-right: 16px; padding-left: 16px; }
+  #userDetailDialogLayer .admin-dialog-foot { padding-right: 16px; padding-left: 16px; }
+  .admin-user-nav { flex-direction: column; align-items: stretch; padding: 0 16px; }
+  .admin-user-nav .admin-service-tabs { min-height: 44px; }
+  .admin-user-nav .admin-service-nav-filters { padding: 0 0 10px; }
+  .admin-user-nav .admin-service-filter-set { width: 100%; }
+  .admin-user-body { padding: 0 16px 16px; }
+  .admin-user-stats { gap: 8px; margin-top: 12px; }
+  .admin-user-stat { padding: 11px 12px; }
+  .admin-user-stat b { font-size: 17px; }
+  /* 开通服务表：窄屏隐去开通时间列，优先保证名称、成交价与状态可读 */
+  .admin-chain-detail-table th, .admin-chain-detail-table td { padding: 9px 7px; font-size: 12px; }
+  .admin-chain-detail-table th:nth-child(7), .admin-chain-detail-table td:nth-child(7) { display: none; }
+  .admin-chain-detail-table .th-order { width: 42px; }
+  .admin-chain-detail-table .th-price-s { width: 112px; }
+  .admin-chain-detail-table .th-status { width: 70px; }
+  .admin-chain-detail-table .th-mini-op { width: 74px; }
+  .admin-chain-detail-table th:first-child, .admin-chain-detail-table td:first-child { padding-left: 8px; }
+  .admin-chain-detail-table th:last-child, .admin-chain-detail-table td:last-child { padding-right: 8px; }
+  .admin-chain-detail-table .admin-deal-now { display: block; margin-left: 0; font-size: 10.5px; }
+  .admin-chain-detail-table .admin-service-expire { display: block; }
+  /* 订单表列多，窄屏在页签内横向滚动而不是压缩列宽 */
+  .admin-service-panel[data-user-panel="orders"] { overflow-x: auto; }
+  .admin-order-table { min-width: 860px; }
+  .admin-service-panel[data-user-panel="orders"] .admin-order-table thead th { position: sticky; top: 0; z-index: 2; }
+}
+
+/* ===== 添加账号弹窗 ===== */
+.admin-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.admin-form label span { display: block; }
+.admin-form label em { color: #f53f3f; font-style: normal; margin-left: 2px; }
+.admin-dialog-error {
+  margin: 10px 0 0; padding: 7px 10px; border-radius: 4px;
+  background: #fff2f0; color: #f53f3f; font-size: 12.5px;
+}
+.admin-chain-checklist-sm { max-height: 168px; margin-top: 12px; }
+.admin-service-checklist { max-height: 220px; }
+#serviceDialogLayer { justify-content: flex-end; padding: 0; }
+#serviceDialogLayer .admin-dialog {
+  display: flex; flex-direction: column; width: min(1100px, 100vw); height: 100%;
+  max-height: 100%; padding: 0; overflow: hidden; border-radius: 0;
+  box-shadow: -8px 0 28px rgba(31, 35, 41, .14);
+  animation: service-drawer-enter .22s ease-out;
+}
+#serviceDialogLayer .admin-dialog-head { flex: 0 0 auto; padding: 16px 20px 6px; }
+#serviceDialogLayer .admin-dialog-head h3 { font-size: 16px; }
+#serviceDialogLayer .admin-dialog-sub { flex: 0 0 auto; margin: 0; padding: 0 20px 14px; border-bottom: 1px solid #f2f3f5; color: #86909c; font-size: 12.5px; }
+.admin-service-drawer-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 20px 20px; }
+#serviceDialogLayer .admin-service-checklist { max-height: none; overflow: visible; }
+#serviceDialogLayer .admin-dialog-foot { flex: 0 0 auto; margin: 0; padding: 14px 20px; border-top: 1px solid #e5e6eb; background: #fff; }
+.admin-service-nav { display: flex; align-items: stretch; justify-content: space-between; gap: 20px; flex: 0 0 auto; min-width: 0; min-height: 46px; padding: 0 20px; border-bottom: 1px solid #e5e6eb; }
+.admin-service-tabs { display: flex; align-items: stretch; flex: 0 0 auto; gap: 24px; }
+.admin-service-nav-filters { display: flex; align-items: center; justify-content: flex-end; flex: 1 1 auto; min-width: 0; }
+.admin-service-filter-set { display: grid; grid-template-columns: 150px minmax(150px, 232px); gap: 8px; width: min(430px, 100%); margin: 0; }
+.admin-service-filter-set[hidden] { display: none; }
+.admin-service-filter-set input { height: 32px; }
+.admin-service-nav .admin-service-filter-set { margin-top: 0; }
+.admin-service-filter-set .admin-category-trigger { height: 32px; font-size: 12.5px; }
+.admin-service-filter-set input[type="search"] {
+  padding-left: 30px; font-size: 12.5px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%2386909c' stroke-width='1.4'%3E%3Ccircle cx='7' cy='7' r='4.4'/%3E%3Cpath d='m10.4 10.4 3.1 3.1' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: 10px center; background-size: 14px 14px;
+}
+.admin-service-tab { position: relative; display: flex; align-items: center; padding: 0 1px; border: 0; background: transparent; color: #4e5969; font: inherit; font-size: 13px; line-height: 1; cursor: pointer; transition: color .15s ease; }
+.admin-service-tab:hover { color: #1677ff; }
+.admin-service-tab.is-active { color: #1677ff; font-weight: 500; }
+.admin-service-tab.is-active::after { position: absolute; right: 0; bottom: -1px; left: 0; height: 2px; border-radius: 1px; background: #1677ff; content: ''; }
+.admin-service-panel[hidden] { display: none; }
+.admin-service-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.admin-service-toolbar .admin-service-filters { flex: 1; min-width: 0; margin-top: 0; }
+.admin-service-table-wrap { width: 100%; }
+.admin-service-table { width: 100%; min-width: 0; table-layout: fixed; }
+.admin-service-table thead th { position: sticky; top: 0; z-index: 2; background: #f7f8fa; box-shadow: inset 0 -1px 0 #e5e6eb; }
+.admin-service-table th, .admin-service-table td { padding: 11px 10px; white-space: normal; overflow-wrap: anywhere; border-bottom: 1px solid #f2f3f5; line-height: 1.5; }
+.admin-service-table th { background: #f7f8fa; color: #86909c; font-weight: 400; font-size: 12.5px; white-space: nowrap; }
+.admin-service-table td { color: #4e5969; }
+.admin-service-table tbody tr:hover { background: #fafbfc; }
+.admin-service-table .th-order { width: 7%; }
+.admin-service-table .th-price { width: 15%; }
+/* 已开通服务价格列：成交价与现价同行展示，不换行 */
+.admin-service-table td.admin-deal-cell { white-space: nowrap; }
+.admin-service-table .th-term { width: 20%; }
+.admin-service-table .th-status { width: 10%; }
+.admin-service-table .th-time { width: 17%; }
+.admin-service-table .th-op { width: 8%; }
+.admin-service-table td.admin-service-term { color: #4e5969; white-space: nowrap; }
+.admin-service-table td.td-sub { white-space: nowrap; }
+.admin-service-expire { color: #86909c; }
+.admin-time-sort { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.admin-time-sort svg { width: 13px; height: 13px; flex: 0 0 13px; fill: none; stroke: #1677ff; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.admin-time-sort.is-ascending svg { transform: rotate(180deg); }
+.admin-time-sort.is-graph svg { stroke: #c9cdd4; }
+.admin-time-sort:hover { color: #1677ff; }
+.admin-service-action { padding: 2px 0; border: 0; background: transparent; box-shadow: none; color: #1677ff; font: inherit; cursor: pointer; }
+.admin-service-action:hover { background: transparent; color: #4096ff; text-decoration: underline; }
+.admin-service-action:active { background: transparent; color: #0958d9; }
+.admin-service-action.is-danger { color: #f53f3f; }
+.admin-service-action.is-danger:hover { color: #ff7875; }
+.admin-service-action.is-danger:active { color: #cb2634; }
+.admin-service-action:focus-visible, .admin-time-sort:focus-visible { outline: 2px solid #91caff; outline-offset: 3px; }
+.admin-service-status { color: #4e5969; }
+.admin-service-status.is-opened { display: inline-block; padding: 1px 6px; border-radius: 3px; background: #f0fff4; color: #00b42a; }
+.admin-service-summary { padding: 12px 0 2px; color: #86909c; font-size: 12px; }
+#serviceDialogLayer .admin-empty { margin: 0; padding: 28px 0; }
+
+/* 勾选列与页脚批量操作 */
+.admin-check { width: 15px; height: 15px; margin: 0; accent-color: #1677ff; cursor: pointer; vertical-align: middle; }
+/* 已开通行的复选框：保留占位但明确不可选 */
+.admin-check:disabled {
+  -webkit-appearance: none; appearance: none;
+  width: 15px; height: 15px;
+  border: 1px solid #c9cdd4; border-radius: 3px;
+  background: #f2f3f5;
+  cursor: not-allowed;
+}
+.admin-service-table .th-check { width: 5%; padding-right: 0; }
+.admin-service-table td.th-check, .admin-service-table th.th-check { text-align: center; }
+.admin-service-table tbody tr:has(.admin-check:checked) { background: #f5f9ff; }
+.admin-service-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.admin-service-foot-info { flex: 1 1 auto; min-width: 0; color: #86909c; font-size: 12.5px; }
+.admin-service-foot-info b { color: #1f2329; font-weight: 500; }
+.admin-service-foot-info b + b { margin-left: 2px; }
+.admin-service-foot-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 10px; }
+.admin-service-foot-actions .admin-btn:disabled { background: #f2f3f5; border-color: #e5e6eb; color: #b4b8c0; box-shadow: none; }
+
+/* 开通确认 / 批量 / 取消弹窗 */
+.admin-dialog-service { width: min(520px, calc(100vw - 32px)); }
+.admin-dialog-service .admin-dialog-sub { margin: 2px 0 0; }
+.admin-confirm-list { margin: 14px 0 0; padding: 14px 16px; border-radius: 6px; background: #f7f8fa; display: grid; gap: 10px; }
+.admin-confirm-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; font-size: 13px; }
+.admin-confirm-row span { flex: 0 0 auto; color: #86909c; }
+.admin-confirm-row b { flex: 1 1 auto; min-width: 0; color: #1f2329; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
+.admin-confirm-block { margin-top: 16px; }
+.admin-confirm-label { margin: 0 0 8px; color: #4e5969; font-size: 13px; }
+.admin-confirm-label em { color: #f53f3f; font-style: normal; margin-left: 2px; }
+.admin-term-picker { display: inline-flex; gap: 8px; }
+.admin-term-option {
+  min-width: 76px; height: 32px; padding: 0 14px; border: 1px solid #e5e6eb; border-radius: 4px;
+  background: #fff; color: #4e5969; font: inherit; font-size: 13px; cursor: pointer; transition: all .15s ease;
+}
+.admin-term-option:hover { border-color: #1677ff; color: #1677ff; }
+.admin-term-option.is-active { border-color: #1677ff; background: #e8f3ff; color: #1677ff; font-weight: 500; }
+.admin-term-option:focus-visible { outline: 2px solid #91caff; outline-offset: 2px; }
+.admin-confirm-total {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  margin-top: 16px; padding: 12px 16px; border-radius: 6px; background: #f7f8fa;
+  color: #4e5969; font-size: 13px;
+}
+.admin-confirm-total b { color: #f53f3f; font-size: 17px; font-weight: 600; }
+/* 合计行：价格调整 */
+.admin-total-row { align-items: center; }
+.admin-total-label { flex: 0 0 auto; }
+.admin-total-side { display: flex; align-items: baseline; gap: 14px; min-width: 0; }
+.admin-total-value { display: inline-flex; align-items: baseline; gap: 8px; min-width: 0; }
+.admin-total-origin {
+  color: #a9aeb8; font-size: 12.5px; font-weight: 400; text-decoration: line-through;
+  text-decoration-thickness: 1px; white-space: nowrap;
+}
+.admin-total-adjust {
+  flex: 0 0 auto; padding: 0; border: 0; background: transparent;
+  color: #1677ff; font: inherit; font-size: 12.5px; line-height: 1.4; cursor: pointer;
+  white-space: nowrap; transition: color .15s ease;
+}
+.admin-total-adjust:hover { color: #0958d9; text-decoration: underline; }
+.admin-total-adjust.is-reset { color: #86909c; }
+.admin-total-adjust.is-reset:hover { color: #4e5969; }
+.admin-total-adjust:focus-visible { outline: 2px solid #91caff; outline-offset: 2px; border-radius: 2px; }
+.admin-total-editor {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  margin-top: 8px; padding: 10px 16px; border: 1px dashed #e5e6eb; border-radius: 6px;
+  background: #fcfcfd; color: #4e5969; font-size: 12.5px;
+}
+.admin-total-editor[hidden] { display: none; }
+.admin-total-editor > span { flex: 0 0 auto; }
+.admin-total-editor .admin-price-input { flex: 0 0 auto; }
+.admin-total-editor .admin-price-input input { width: 132px; height: 30px; font-size: 13px; }
+.admin-batch-term { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+.admin-batch-term > span { color: #4e5969; font-size: 13px; }
+.admin-batch-term > em { flex: 1 1 100%; color: #86909c; font-size: 12px; font-style: normal; }
+.admin-dialog-batch { width: min(620px, calc(100vw - 32px)); }
+.admin-batch-table-wrap { max-height: 260px; margin-top: 14px; overflow-y: auto; border: 1px solid #f0f1f3; border-radius: 6px; }
+.admin-batch-table { width: 100%; table-layout: fixed; }
+.admin-batch-table th, .admin-batch-table td { padding: 8px 12px; font-size: 12.5px; white-space: nowrap; overflow-wrap: anywhere; }
+.admin-batch-table th { position: sticky; top: 0; z-index: 1; background: #f7f8fa; color: #86909c; font-weight: 400; }
+.admin-batch-table td { color: #4e5969; border-bottom: 1px solid #f2f3f5; }
+.admin-batch-table tr:last-child td { border-bottom: 0; }
+.admin-batch-table .th-price { width: 110px; }
+.admin-batch-table .th-term-s { width: 76px; }
+.admin-batch-table .th-subtotal { width: 100px; }
+.admin-batch-subtotal { color: #1f2329; font-weight: 500; }
+.admin-dialog-warn {
+  margin: 14px 0 0; padding: 9px 12px; border-radius: 4px;
+  background: #fff7e8; color: #d46b08; font-size: 12.5px; line-height: 1.6;
+}
+.admin-cancel-list { max-height: 260px; margin-top: 12px; overflow-y: auto; display: grid; gap: 8px; }
+.admin-cancel-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 9px 12px; border-radius: 4px; background: #f7f8fa; font-size: 12.5px;
+}
+.admin-cancel-item > div:first-child { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.admin-cancel-item b { color: #1f2329; font-weight: 500; }
+.admin-cancel-item span { color: #86909c; font-size: 12px; }
+.admin-cancel-meta { flex: 0 0 auto; color: #86909c; white-space: nowrap; }
+@media (max-width: 680px) {
+  #serviceDialogLayer .admin-dialog-head { padding-right: 16px; padding-left: 16px; }
+  #serviceDialogLayer .admin-dialog-sub { padding-right: 16px; padding-left: 16px; }
+  .admin-service-nav { align-items: stretch; flex-direction: column; gap: 0; padding-right: 16px; padding-left: 16px; }
+  .admin-service-tabs { min-height: 44px; padding-right: 0; padding-left: 0; }
+  .admin-service-nav-filters { padding: 0 0 10px; }
+  .admin-service-filter-set { grid-template-columns: minmax(115px, .8fr) minmax(0, 1.2fr); width: 100%; }
+  .admin-service-drawer-body { padding-right: 16px; padding-left: 16px; }
+  .admin-service-table th, .admin-service-table td { padding: 9px 4px; font-size: 12px; }
+  .admin-service-table th { font-size: 11.5px; }
+  .admin-service-table td.td-sub, .admin-service-table td.admin-service-term { font-size: 11.5px; }
+  /* 窄屏放不下「成交价 + 现价」同行，改为两行展示，避免溢出压到相邻列 */
+  .admin-service-table td.admin-deal-cell { white-space: normal; }
+  .admin-service-table .admin-deal-now { display: block; margin-left: 0; }
+  /* 服务期「1 年（到期日）」在窄屏折成两行，避免压到开通时间列 */
+  .admin-service-table td.admin-service-term { white-space: normal; }
+  .admin-service-table .admin-service-expire { display: block; }
+}
+@keyframes service-drawer-enter { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@media (prefers-reduced-motion: reduce) { #serviceDialogLayer .admin-dialog { animation: none; } }
+.admin-service-filters {
+  display: grid; grid-template-columns: minmax(160px, 220px) minmax(200px, 1fr); gap: 10px;
+  margin-top: 12px;
+}
+.admin-service-filters input {
+  width: 100%; min-width: 0; height: 34px; padding: 0 10px;
+  border: 1px solid #e5e6eb; border-radius: 4px; background: #fff;
+  color: #1f2329; font: inherit; font-size: 13px; outline: none;
+}
+.admin-service-filters input:focus { border-color: #1677ff; }
+.admin-category-picker { position: relative; min-width: 0; }
+.admin-category-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; height: 34px; padding: 0 10px; border: 1px solid #e5e6eb; border-radius: 4px;
+  background: #fff; color: #1f2329; font: inherit; font-size: 13px; text-align: left; cursor: pointer;
+}
+.admin-category-trigger:hover, .admin-category-trigger[aria-expanded="true"] { border-color: #1677ff; }
+.admin-category-trigger svg { flex: 0 0 16px; width: 16px; height: 16px; fill: none; stroke: #86909c; stroke-width: 1.6; }
+.admin-category-menu {
+  position: fixed; z-index: 300; top: 0; left: 0; display: grid;
+  grid-template-columns: minmax(130px, 38%) minmax(170px, 1fr); grid-template-rows: minmax(0, 1fr);
+  width: min(460px, calc(100vw - 48px)); height: 280px; max-height: calc(100vh - 48px);
+  overflow: hidden; border: 1px solid #d9dce2; border-radius: 4px;
+  background: #fff; box-shadow: 0 6px 20px rgba(31, 35, 41, .16);
+}
+.admin-category-menu[hidden] { display: none; }
+.admin-category-level1, .admin-category-level2 { min-height: 0; overflow-y: auto; padding: 5px; }
+.admin-category-level1 { border-right: 1px solid #e5e6eb; background: #fafbfc; }
+.admin-category-level2 { background: #fff; }
+.admin-category-option {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 32px;
+  padding: 6px 9px; border: 0; border-radius: 3px; background: transparent; color: #4e5969;
+  font: inherit; font-size: 12.5px; text-align: left; cursor: pointer;
+}
+.admin-category-option:hover { background: #f2f7ff; color: #1677ff; }
+.admin-category-option.is-active { background: #e8f3ff; color: #1677ff; font-weight: 600; }
+.admin-category-option span { color: #86909c; font-size: 16px; }
+.admin-category-hint { padding: 12px 10px; color: #86909c; font-size: 12px; }
+#serviceChainList, #userAddChainList { margin-top: 8px; }
+#serviceChainList:empty, #userAddChainList:empty { display: none; }
+@media (max-width: 560px) {
+  .admin-service-filters { grid-template-columns: minmax(125px, .8fr) minmax(0, 1.2fr); gap: 8px; }
+  .admin-category-menu { grid-template-columns: minmax(110px, 38%) minmax(150px, 1fr); width: min(360px, calc(100vw - 48px)); }
+}

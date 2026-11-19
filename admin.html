@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+  <title>五度易链 · 运营管理后台</title>
+  <link rel="stylesheet" href="admin.css?v=202611181215" />
+</head>
+<body>
+  <header class="admin-topbar">
+    <div class="admin-topbar-left">
+      <span class="admin-brand-logo">五</span>
+      <strong class="admin-brand-name">五度易链</strong>
+      <span class="admin-breadcrumb" id="adminBreadcrumb"><em>运营管理后台</em><i>/</i><b>图谱管理</b></span>
+    </div>
+    <div class="admin-topbar-user">
+      <span class="admin-topbar-avatar" id="adminAvatar">管</span>
+      <strong id="adminAccount">—</strong>
+      <span class="admin-topbar-role">管理员</span>
+      <button type="button" class="admin-logout" id="adminLogout">退出登录</button>
+    </div>
+  </header>
+
+  <div class="admin-shell">
+    <aside class="admin-sidebar">
+      <nav class="admin-nav" id="adminNav">
+        <div class="admin-nav-group">
+          <button type="button" class="admin-nav-item admin-nav-parent is-active" data-nav-group="graph" aria-expanded="true" aria-controls="graphSubNav"><svg viewBox="0 0 24 24"><path d="M3 6.5 8.5 4 15 6.5 21 4v13.5L15 20l-6.5-2.5L3 20V6.5Z"/><path d="M8.5 4v13.5M15 6.5V20"/></svg><span>图谱管理</span><svg class="admin-nav-caret" viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></button>
+          <div class="admin-nav-sub" id="graphSubNav">
+            <button type="button" class="admin-nav-subitem is-active" data-admin-view="graph-display" title="产业链展示"><i class="admin-nav-dot" aria-hidden="true"></i><span>产业链展示</span></button>
+            <button type="button" class="admin-nav-subitem" data-admin-view="graph-price" title="产业链价格"><i class="admin-nav-dot" aria-hidden="true"></i><span>产业链价格</span></button>
+          </div>
+        </div>
+        <button type="button" class="admin-nav-item" data-admin-view="home"><svg viewBox="0 0 24 24"><path d="m3 11 9-7 9 7"/><path d="M5 9.5V21h14V9.5"/><path d="M10 21v-6h4v6"/></svg><span>首页管理</span></button>
+        <button type="button" class="admin-nav-item" data-admin-view="users"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21 20a6 6 0 0 0-4-5.6"/></svg><span>用户管理</span></button>
+        <button type="button" class="admin-nav-item" data-admin-view="perms"><svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5M12 14.5v2.5"/></svg><span>权限管理</span></button>
+      </nav>
+      <div class="admin-sidebar-footer">
+        <a class="admin-back-link" href="index.html"><svg viewBox="0 0 24 24"><path d="M20 12H5M10 6l-6 6 6 6"/></svg><span>返回前台</span></a>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-page-head">
+        <h1 id="adminPageTitle">图谱管理</h1>
+        <div class="admin-page-actions" id="adminPageActions">
+          <button type="button" class="admin-btn" id="graphReset">恢复默认</button>
+        </div>
+      </div>
+
+      <div class="admin-content">
+        <!-- 图谱管理 · 产业链展示 -->
+        <section class="admin-view is-active" data-admin-panel="graph-display">
+          <div class="admin-tabs" id="graphTabs">
+            <button type="button" class="admin-tab is-active" data-graph-tab="groups">分类列表</button>
+            <button type="button" class="admin-tab" data-graph-tab="chains">图谱列表</button>
+          </div>
+          <div class="admin-block" id="graphGroupsBlock">
+            <table class="admin-table">
+              <thead><tr><th class="th-order">序号</th><th>分类名称</th><th>产业链管理</th><th>可见性</th><th class="th-op">操作</th></tr></thead>
+              <tbody id="groupTableBody"></tbody>
+            </table>
+          </div>
+          <div class="admin-block" id="graphChainsBlock" hidden>
+            <table class="admin-table admin-graph-table">
+              <thead><tr><th class="th-order">序号</th><th>产业链名称</th><th>所属分类</th><th>卡片图标</th><th>热门标签</th><th>前端展示</th></tr></thead>
+              <tbody id="chainTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- 图谱管理 · 产业链价格 -->
+        <section class="admin-view" data-admin-panel="graph-price">
+          <p class="admin-toolbar-tip">按图谱列表顺序维护各产业链的年度定价，价格调整后即时生效于开通服务与前台展示。</p>
+          <div class="admin-block">
+            <div class="admin-table-wrap"><table class="admin-table admin-price-table">
+              <thead><tr><th class="th-order">序号</th><th class="th-name">产业链名称</th><th class="th-category">所属分类</th><th class="th-price">价格（元/年）</th><th class="th-time">更新时间</th><th class="th-count">开通用户数</th><th class="th-op">操作</th></tr></thead>
+              <tbody id="priceTableBody"></tbody>
+            </table></div>
+            <p class="admin-empty" id="priceEmpty" hidden>暂无产业链</p>
+            <div class="admin-price-foot"><span id="priceSummary"></span></div>
+          </div>
+        </section>
+
+        <!-- 首页管理 -->
+        <section class="admin-view" data-admin-panel="home">
+          <div class="admin-block">
+            <table class="admin-table">
+              <thead><tr><th class="th-order">序号</th><th>热门搜索词</th><th class="th-op">操作</th></tr></thead>
+              <tbody id="hotwordTableBody"></tbody>
+            </table>
+            <div class="admin-block-foot">
+              <input type="text" id="hotwordInput" maxlength="12" placeholder="输入新的热门搜索词（不超过12个字）" />
+              <button type="button" class="admin-btn" id="hotwordAdd">+ 添加热词</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 用户管理 -->
+        <section class="admin-view" data-admin-panel="users">
+          <p class="admin-toolbar-tip">查看注册用户基本信息与已开通服务，支持密码重置、账号停用启用及开通服务管理。</p>
+          <div class="admin-block">
+            <div class="admin-table-tools">
+              <input type="text" id="userSearchInput" placeholder="请输入手机号 / 用户名关键词" />
+              <span class="admin-tool-label">注册时间</span>
+              <input type="date" id="userRegStart" class="admin-date-input" />
+              <i class="admin-tool-sep">-</i>
+              <input type="date" id="userRegEnd" class="admin-date-input" />
+            </div>
+            <div class="admin-table-wrap"><table class="admin-table" id="userTable">
+              <thead><tr><th class="th-order th-uid">用户ID</th><th>手机号</th><th>用户名</th><th>账号类型</th><th>已开通服务</th><th>注册时间</th><th>状态</th><th class="th-op">操作</th></tr></thead>
+              <tbody id="userTableBody"></tbody>
+            </table></div>
+            <p class="admin-empty" id="userEmpty" hidden>暂无符合条件的用户</p>
+            <div class="admin-pager" id="userPager" hidden>
+              <span class="admin-pager-total" id="userPagerTotal"></span>
+              <div class="admin-pager-btns" id="userPagerBtns"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 权限管理 -->
+        <section class="admin-view" data-admin-panel="perms">
+          <p class="admin-toolbar-tip">平台管理人员账号及其角色维护，按角色配置平台内可用功能模块。</p>
+          <div class="admin-block">
+            <div class="admin-block-head"><h2>账号管理</h2></div>
+            <div class="admin-table-wrap"><table class="admin-table">
+              <thead><tr><th>姓名</th><th>登录账号</th><th>角色</th><th>状态</th><th>最近登录</th><th class="th-op">操作</th></tr></thead>
+              <tbody id="accountTableBody"></tbody>
+            </table></div>
+          </div>
+          <div class="admin-block">
+            <div class="admin-block-head"><h2>权限配置</h2><button type="button" class="admin-btn admin-btn-primary admin-btn-mini" id="permSave">保存权限配置</button></div>
+            <div class="admin-table-wrap"><table class="admin-table admin-perm-table" id="permTable">
+              <thead><tr><th>角色</th><th>产业图谱管理</th><th>首页管理</th><th>用户管理</th><th>权限管理</th></tr></thead>
+              <tbody id="permTableBody"></tbody>
+            </table></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- 分类产业链列表弹窗 -->
+  <div class="admin-dialog-layer" id="groupChainsDialogLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-chains" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3 id="groupChainsDialogTitle">分类产业链</h3><button type="button" class="admin-dialog-close" id="groupChainsDialogClose">×</button></div>
+      <table class="admin-table admin-dialog-table">
+        <thead><tr><th class="th-order">序号</th><th>产业链名称</th><th>卡片图标</th><th>可见性</th><th>热门</th><th class="th-op">操作</th></tr></thead>
+        <tbody id="groupChainsList"></tbody>
+      </table>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn" id="groupChainsDialogCancel">取消</button><button type="button" class="admin-btn admin-btn-primary" id="groupChainsDialogSave">保存</button></div>
+    </div>
+  </div>
+
+  <!-- 已开通服务管理弹窗 -->
+  <div class="admin-dialog-layer" id="serviceDialogLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-chains" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>开通服务管理</h3><button type="button" class="admin-dialog-close" id="serviceDialogClose">×</button></div>
+      <p class="admin-dialog-sub" id="serviceDialogUser">—</p>
+      <div class="admin-service-nav">
+        <div class="admin-service-tabs" role="tablist">
+          <button type="button" class="admin-service-tab is-active" id="serviceOpenedTab" role="tab" aria-selected="true" data-service-tab="opened">已开通服务</button>
+          <button type="button" class="admin-service-tab" id="serviceCatalogTab" role="tab" aria-selected="false" data-service-tab="catalog">服务列表</button>
+        </div>
+        <div class="admin-service-nav-filters">
+          <div class="admin-service-filters admin-service-filter-set is-active" data-service-filter="opened">
+            <div class="admin-category-picker" id="serviceOpenedCategoryPicker">
+              <button type="button" class="admin-category-trigger" id="serviceOpenedCategory" aria-haspopup="listbox" aria-expanded="false">全部分类<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></button>
+              <div class="admin-category-menu" hidden><div class="admin-category-level1" role="listbox" aria-label="分类类型"></div><div class="admin-category-level2" role="listbox" aria-label="具体分类"></div></div>
+            </div>
+            <input type="search" id="serviceOpenedSearch" placeholder="搜索产业链名称" aria-label="搜索已开通产业链" />
+          </div>
+          <div class="admin-service-filters admin-service-filter-set" data-service-filter="catalog" hidden>
+            <div class="admin-category-picker" id="serviceCatalogCategoryPicker">
+              <button type="button" class="admin-category-trigger" id="serviceCatalogCategory" aria-haspopup="listbox" aria-expanded="false">全部分类<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></button>
+              <div class="admin-category-menu" hidden><div class="admin-category-level1" role="listbox" aria-label="分类类型"></div><div class="admin-category-level2" role="listbox" aria-label="具体分类"></div></div>
+            </div>
+            <input type="search" id="serviceCatalogSearch" placeholder="搜索产业链名称" aria-label="搜索全部产业链" />
+          </div>
+        </div>
+      </div>
+      <div class="admin-service-drawer-body">
+        <section class="admin-service-panel is-active" data-service-panel="opened" role="tabpanel">
+          <div class="admin-service-table-wrap"><table class="admin-table admin-service-table">
+            <thead><tr><th class="th-check"><input type="checkbox" class="admin-check" id="serviceOpenedCheckAll" aria-label="全选已开通服务" /></th><th class="th-order">序号</th><th>产业链名称</th><th>产业分类</th><th class="th-price">价格（元/年）</th><th class="th-status">状态</th><th class="th-term">服务期</th><th class="th-time" aria-sort="descending"><button type="button" class="admin-time-sort" id="serviceOpenedSort">开通时间<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10m-4-4 4 4 4-4" /></svg></button></th><th class="th-op">操作</th></tr></thead>
+            <tbody id="serviceOpenedList"></tbody>
+          </table></div>
+          <p class="admin-empty" id="serviceOpenedEmpty" hidden>暂无符合条件的已开通服务</p>
+          <div class="admin-service-summary" id="serviceOpenedSummary"></div>
+        </section>
+        <section class="admin-service-panel" data-service-panel="catalog" role="tabpanel" hidden>
+          <div class="admin-service-table-wrap"><table class="admin-table admin-service-table">
+            <thead><tr><th class="th-check"><input type="checkbox" class="admin-check" id="serviceCatalogCheckAll" aria-label="全选未开通产业链" /></th><th class="th-order">序号</th><th>产业链名称</th><th>产业分类</th><th class="th-price">价格（元/年）</th><th class="th-status">申请状态</th><th class="th-time" aria-sort="none"><button type="button" class="admin-time-sort is-graph" id="serviceCatalogSort">开通时间<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10m-4-4 4 4 4-4" /></svg></button></th><th class="th-op">操作</th></tr></thead>
+            <tbody id="serviceCatalogList"></tbody>
+          </table></div>
+          <p class="admin-empty" id="serviceCatalogEmpty" hidden>没有符合条件的产业链</p>
+          <div class="admin-service-summary" id="serviceCatalogSummary"></div>
+        </section>
+      </div>
+      <div class="admin-dialog-foot admin-service-foot">
+        <div class="admin-service-foot-info" id="serviceFootInfo"></div>
+        <div class="admin-service-foot-actions">
+          <button type="button" class="admin-btn admin-btn-primary" id="serviceBatchOpen" hidden>批量开通</button>
+          <button type="button" class="admin-btn admin-btn-danger" id="serviceBatchCancel" hidden>批量取消</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 单个开通确认弹窗 -->
+  <div class="admin-dialog-layer" id="serviceOpenDialogLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-service" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>确认开通服务</h3><button type="button" class="admin-dialog-close" id="serviceOpenDialogClose">×</button></div>
+      <p class="admin-dialog-sub" id="serviceOpenDialogUser">—</p>
+      <div class="admin-confirm-list">
+        <div class="admin-confirm-row"><span>产业链名称</span><b id="serviceOpenName">—</b></div>
+        <div class="admin-confirm-row"><span>产业分类</span><b id="serviceOpenCategory">—</b></div>
+        <div class="admin-confirm-row"><span>价格（元/年）</span><b id="serviceOpenPrice">—</b></div>
+        <div class="admin-confirm-row"><span>服务到期</span><b id="serviceOpenExpire">—</b></div>
+      </div>
+      <div class="admin-confirm-block">
+        <p class="admin-confirm-label">开通年限<em>*</em></p>
+        <div class="admin-term-picker" id="serviceOpenTermPicker" role="radiogroup" aria-label="开通年限"></div>
+      </div>
+      <div class="admin-confirm-total admin-total-row">
+        <span class="admin-total-label">合计开通金额</span>
+        <span class="admin-total-side">
+          <span class="admin-total-value"><del class="admin-total-origin" id="serviceOpenOrigin" hidden></del><b id="serviceOpenTotal">—</b></span>
+          <button type="button" class="admin-total-adjust" id="serviceOpenAdjust">价格调整</button>
+          <button type="button" class="admin-total-adjust is-reset" id="serviceOpenReset" hidden>恢复原价</button>
+        </span>
+      </div>
+      <div class="admin-total-editor" id="serviceOpenAdjustEditor" hidden>
+        <span>调整后金额</span>
+        <label class="admin-price-input"><input type="number" id="serviceOpenAdjustInput" min="1" step="100" /><i>元</i></label>
+        <button type="button" class="admin-btn admin-btn-mini admin-btn-primary" id="serviceOpenAdjustSave">确定</button>
+        <button type="button" class="admin-btn admin-btn-mini" id="serviceOpenAdjustCancel">取消</button>
+      </div>
+      <div class="admin-dialog-foot">
+        <button type="button" class="admin-btn" id="serviceOpenDialogCancel">取消</button>
+        <button type="button" class="admin-btn" id="serviceOpenPushOrder">推送订单</button>
+        <button type="button" class="admin-btn admin-btn-primary" id="serviceOpenDialogSave">确认开通</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 批量开通弹窗 -->
+  <div class="admin-dialog-layer" id="serviceBatchOpenLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-service admin-dialog-batch" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>批量开通服务</h3><button type="button" class="admin-dialog-close" id="serviceBatchOpenClose">×</button></div>
+      <p class="admin-dialog-sub" id="serviceBatchOpenUser">—</p>
+      <div class="admin-batch-term">
+        <span>统一服务期</span>
+        <div class="admin-term-picker" id="serviceBatchTermPicker" role="radiogroup" aria-label="统一服务期"></div>
+        <em>选择后统一应用到下方全部产业链</em>
+      </div>
+      <div class="admin-batch-table-wrap">
+        <table class="admin-table admin-batch-table">
+          <thead><tr><th>产业链名称</th><th class="th-price">价格（元/年）</th><th class="th-term-s">服务期</th><th class="th-subtotal">小计</th></tr></thead>
+          <tbody id="serviceBatchList"></tbody>
+        </table>
+      </div>
+      <div class="admin-confirm-total admin-total-row">
+        <span class="admin-total-label">合计开通金额</span>
+        <span class="admin-total-side">
+          <span class="admin-total-value"><del class="admin-total-origin" id="serviceBatchOrigin" hidden></del><b id="serviceBatchTotal">—</b></span>
+          <button type="button" class="admin-total-adjust" id="serviceBatchAdjust">价格调整</button>
+          <button type="button" class="admin-total-adjust is-reset" id="serviceBatchReset" hidden>恢复原价</button>
+        </span>
+      </div>
+      <div class="admin-total-editor" id="serviceBatchAdjustEditor" hidden>
+        <span>调整后金额</span>
+        <label class="admin-price-input"><input type="number" id="serviceBatchAdjustInput" min="1" step="100" /><i>元</i></label>
+        <button type="button" class="admin-btn admin-btn-mini admin-btn-primary" id="serviceBatchAdjustSave">确定</button>
+        <button type="button" class="admin-btn admin-btn-mini" id="serviceBatchAdjustCancel">取消</button>
+      </div>
+      <div class="admin-dialog-foot">
+        <button type="button" class="admin-btn" id="serviceBatchOpenCancel">取消</button>
+        <button type="button" class="admin-btn" id="serviceBatchPushOrder">推送订单</button>
+        <button type="button" class="admin-btn admin-btn-primary" id="serviceBatchOpenSave">确认开通</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 取消服务确认弹窗（单个 / 批量共用） -->
+  <div class="admin-dialog-layer" id="serviceCancelLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-service" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3 id="serviceCancelTitle">确认取消服务</h3><button type="button" class="admin-dialog-close" id="serviceCancelClose">×</button></div>
+      <p class="admin-dialog-sub" id="serviceCancelUser">—</p>
+      <p class="admin-dialog-warn" id="serviceCancelText">取消后客户将立即失去该产业链的查看权限，操作不可撤销。</p>
+      <div class="admin-cancel-list" id="serviceCancelList"></div>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn" id="serviceCancelBack">返回</button><button type="button" class="admin-btn admin-btn-danger" id="serviceCancelConfirm">确认取消</button></div>
+    </div>
+  </div>
+
+  <!-- 价格调整弹窗 -->
+  <div class="admin-dialog-layer" id="priceDialogLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-price" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>价格调整</h3><button type="button" class="admin-dialog-close" id="priceDialogClose">×</button></div>
+      <p class="admin-dialog-sub" id="priceDialogName">—</p>
+      <div class="admin-confirm-list">
+        <div class="admin-confirm-row"><span>当前价格</span><b id="priceDialogCurrent">—</b></div>
+        <div class="admin-confirm-row is-input">
+          <span>调整后价格<em>*</em></span>
+          <label class="admin-price-input"><input type="number" id="priceDialogInput" min="1" step="100" /><i>元 / 年</i></label>
+        </div>
+      </div>
+      <p class="admin-price-preview" id="priceDialogPreview"></p>
+      <p class="admin-price-note" id="priceDialogNote"></p>
+      <p class="admin-dialog-error" id="priceDialogError" hidden></p>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn" id="priceDialogCancel">取消</button><button type="button" class="admin-btn admin-btn-primary" id="priceDialogSave">确认调整</button></div>
+    </div>
+  </div>
+
+  <!-- 开通用户列表弹窗 -->
+  <div class="admin-dialog-layer" id="priceUsersLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-price" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3 id="priceUsersTitle">开通用户</h3><button type="button" class="admin-dialog-close" id="priceUsersClose">×</button></div>
+      <p class="admin-dialog-sub" id="priceUsersSub">—</p>
+      <div class="admin-price-users" id="priceUsersList"></div>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn admin-btn-primary" id="priceUsersOk">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- 用户详情（右侧抽屉：基本信息 / 开通服务 / 订单列表 三页签） -->
+  <div class="admin-dialog-layer" id="userDetailDialogLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-user" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>用户详情</h3><button type="button" class="admin-dialog-close" id="userDetailDialogClose">×</button></div>
+      <p class="admin-dialog-sub" id="userDetailSub">—</p>
+      <div class="admin-service-nav admin-user-nav">
+        <div class="admin-service-tabs" role="tablist">
+          <button type="button" class="admin-service-tab is-active" data-user-tab="basic" role="tab" aria-selected="true">基本信息</button>
+          <button type="button" class="admin-service-tab" data-user-tab="chains" role="tab" aria-selected="false">开通服务<i class="admin-tab-count" id="userDetailChainCount">0</i></button>
+          <button type="button" class="admin-service-tab" data-user-tab="orders" role="tab" aria-selected="false">订单列表<i class="admin-tab-count" id="userDetailOrderCount">0</i></button>
+        </div>
+        <div class="admin-service-nav-filters">
+          <div class="admin-service-filters admin-service-filter-set is-active" data-user-filter="chains" hidden>
+            <input type="search" id="userDetailChainSearch" placeholder="搜索已开通产业链" aria-label="搜索已开通产业链" />
+          </div>
+        </div>
+      </div>
+      <div class="admin-user-body">
+        <section class="admin-service-panel is-active" data-user-panel="basic" role="tabpanel">
+          <div class="admin-user-stats" id="userDetailStats"></div>
+          <div class="admin-detail-list" id="userDetailList"></div>
+        </section>
+        <section class="admin-service-panel" data-user-panel="chains" role="tabpanel" hidden>
+          <p class="admin-user-tip" id="userDetailChainTip" hidden></p>
+          <table class="admin-table admin-detail-table admin-chain-detail-table">
+            <thead><tr><th class="th-order">序号</th><th>产业链名称</th><th>产业分类</th><th class="th-price-s">价格（元/年）</th><th class="th-status">状态</th><th class="th-term">服务期</th><th class="th-time">开通时间</th><th class="th-mini-op">操作</th></tr></thead>
+            <tbody id="userDetailChainBody"></tbody>
+          </table>
+          <p class="admin-detail-empty" id="userDetailChainEmpty" hidden>暂未开通产业链服务</p>
+        </section>
+        <section class="admin-service-panel" data-user-panel="orders" role="tabpanel" hidden>
+          <table class="admin-table admin-detail-table admin-order-table">
+            <thead><tr><th class="th-order-id">订单编号</th><th class="th-order-chains">已开通服务</th><th class="th-order-term">服务年限</th><th class="th-order-money">订单金额</th><th class="th-order-money">实付金额</th><th class="th-order-pay">支付方式</th><th class="th-mini-op">支付状态</th><th class="th-mini-op">发票状态</th><th class="th-order-time">订单时间</th><th class="th-order-op">操作</th></tr></thead>
+            <tbody id="userDetailOrderBody"></tbody>
+          </table>
+          <p class="admin-detail-empty" id="userDetailOrderEmpty" hidden>暂无订单记录</p>
+        </section>
+      </div>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn admin-btn-primary" id="userDetailDialogOk">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- 订单详情弹窗（用户详情 → 订单列表 → 查看详情） -->
+  <div class="admin-dialog-layer" id="orderDetailDialogLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-order" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>订单详情</h3><button type="button" class="admin-dialog-close" id="orderDetailClose">×</button></div>
+      <p class="admin-dialog-sub" id="orderDetailSub">—</p>
+      <div class="admin-order-detail-body" id="orderDetailBody"></div>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn admin-btn-primary" id="orderDetailOk">关闭</button></div>
+    </div>
+  </div>
+
+  <!-- 密码重置确认弹窗 -->
+  <div class="admin-dialog-layer" id="pwdResetDialogLayer" aria-hidden="true">
+    <div class="admin-dialog" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>密码重置</h3><button type="button" class="admin-dialog-close" id="pwdResetDialogClose">×</button></div>
+      <p class="admin-dialog-text" id="pwdResetDialogText">—</p>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn" id="pwdResetDialogCancel">取消</button><button type="button" class="admin-btn admin-btn-primary" id="pwdResetDialogSave">确认重置</button></div>
+    </div>
+  </div>
+
+  <!-- 添加账号弹窗 -->
+  <div class="admin-dialog-layer" id="userAddDialogLayer" aria-hidden="true">
+    <div class="admin-dialog admin-dialog-chains" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>添加账号</h3><button type="button" class="admin-dialog-close" id="userAddDialogClose">×</button></div>
+      <p class="admin-dialog-sub">为客户创建登录账号，可同时为其开通产业链服务。</p>
+      <div class="admin-form admin-form-grid">
+        <label><span>手机号<em>*</em></span><input type="tel" id="userAddPhone" maxlength="11" placeholder="请输入11位手机号" /></label>
+        <label><span>用户名</span><input type="text" id="userAddUsername" maxlength="16" placeholder="选填，3-16位字母/数字/下划线" /></label>
+        <label><span>初始密码</span><input type="text" id="userAddPwd" maxlength="18" placeholder="默认随机生成，可手动修改" /></label>
+      </div>
+      <p class="admin-dialog-error" id="userAddError" hidden></p>
+      <div class="admin-dialog-divider">开通服务（勾选后自动设为收费会员）</div>
+      <div class="admin-service-filters">
+        <div class="admin-category-picker" id="userAddCategoryPicker">
+          <button type="button" class="admin-category-trigger" id="userAddChainCategory" aria-haspopup="listbox" aria-expanded="false">全部分类<svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4" /></svg></button>
+          <div class="admin-category-menu" hidden>
+            <div class="admin-category-level1" role="listbox" aria-label="分类类型"></div>
+            <div class="admin-category-level2" role="listbox" aria-label="具体分类"></div>
+          </div>
+        </div>
+        <input type="search" id="userAddChainSearch" placeholder="搜索产业链名称" aria-label="搜索产业链名称" />
+      </div>
+      <div class="admin-chain-checklist admin-chain-checklist-sm" id="userAddChainList"></div>
+      <p class="admin-empty" id="userAddChainEmpty" hidden>没有符合条件的产业链</p>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn" id="userAddDialogCancel">取消</button><button type="button" class="admin-btn admin-btn-primary" id="userAddDialogSave">确认添加</button></div>
+    </div>
+  </div>
+
+  <!-- 新增管理员账号弹窗 -->
+  <div class="admin-dialog-layer" id="accountDialogLayer" aria-hidden="true">
+    <div class="admin-dialog" role="dialog" aria-modal="true">
+      <div class="admin-dialog-head"><h3>新增管理员账号</h3><button type="button" class="admin-dialog-close" id="accountDialogClose">×</button></div>
+      <div class="admin-form">
+        <label>姓名<input type="text" id="accountNameInput" maxlength="12" placeholder="请输入姓名" /></label>
+        <label>登录账号<input type="text" id="accountLoginInput" maxlength="20" placeholder="手机号或字母账号" /></label>
+        <label>初始密码<input type="text" id="accountPwdInput" maxlength="18" placeholder="6-18位，字母、数字及特殊字符" /></label>
+        <label>角色<select id="accountRoleSelect"></select></label>
+      </div>
+      <div class="admin-dialog-foot"><button type="button" class="admin-btn" id="accountDialogCancel">取消</button><button type="button" class="admin-btn admin-btn-primary" id="accountDialogSave">确认新增</button></div>
+    </div>
+  </div>
+
+  <div class="admin-toast" id="adminToast" aria-live="polite"></div>
+
+  <script src="national-industry-data.js?v=202609111520"></script>
+  <script src="industry-category-data.js?v=202609111520"></script>
+  <script src="admin.js?v=202611181200"></script>
+</body>
+</html>
