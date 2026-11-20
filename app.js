@@ -3232,7 +3232,7 @@ function renderAnalysis(profile = getProfile()) {
   $('#financingYearTotal').textContent = `${financingEvents.toLocaleString('zh-CN')} 起`;
   renderFinancingYearLine('analysisFinancingYearLine', financingYearEntries);
   $('#qualificationRate').textContent = `${total.toLocaleString('zh-CN')} 家`;
-  $('#analysisQualificationGrid').innerHTML = qualificationEntries.map(([label, value]) => `<div class="qualification-card"><div class="qualification-copy"><span>${escapeHtml(label)}</span><strong>${value.toLocaleString('zh-CN')}<i>家</i></strong></div><div class="qualification-track"><b style="width:${total && value ? Math.max(4, Math.round(value / total * 100)) : 0}%"></b></div><small>占样本 ${formatAnalysisPercent(value, total)}</small></div>`).join('');
+  $('#analysisQualificationGrid').innerHTML = qualificationEntries.map(([label, value]) => `<div class="qualification-card"><div class="qualification-copy"><span>${escapeHtml(label)}</span><strong>${value.toLocaleString('zh-CN')}<i>家</i></strong></div><div class="qualification-track"><b style="width:${total && value ? Math.max(4, Math.round(value / total * 100)) : 0}%"></b></div><small>占比 ${formatAnalysisPercent(value, total)}</small></div>`).join('');
   renderDistribution(companies);
   companyListPage = 0;
   renderCompanyList(profile);
