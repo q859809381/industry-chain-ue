@@ -1413,7 +1413,7 @@ function renderSelectedChain(profile) {
     return;
   }
   const companyCount = new Set(getVisibleCompanyRecords(profile).map((company) => company.name)).size;
-  $('#selectedChainStats').innerHTML = `<span><strong>${profile.stages.length}</strong><small>一级环节</small></span><span><strong>${profile.nodeCount.toLocaleString('zh-CN')}</strong><small>细分环节</small></span><span><strong>${companyCount.toLocaleString('zh-CN')}</strong><small>代表企业</small></span>`;
+  $('#selectedChainStats').innerHTML = `<span><strong>${profile.stages.length}</strong><small>一级环节</small></span><span><strong>${profile.nodeCount.toLocaleString('zh-CN')}</strong><small>细分环节</small></span><span><strong>${companyCount.toLocaleString('zh-CN')}</strong><small>链上企业</small></span>`;
 }
 
 function setChainSelectionMode(selected) {
@@ -2118,7 +2118,7 @@ function renderContactCell(values = []) {
 // group: primary 常驻首行（地区 / 环节），advanced 收进「更多筛选」
 const COMPANY_FILTER_CONFIG = [
   { key: 'region', label: '所属地区', group: 'primary', empty: '全部地区', mode: 'multi', tree: true, searchable: true, searchHint: '搜索省 / 市 / 区县' },
-  { key: 'node', label: '产业链环节', group: 'primary', empty: '全部环节', mode: 'multi', tree: true, searchable: true, searchHint: '搜索环节 / 节点 / 路径' },
+  { key: 'node', label: '产业链环节', group: 'primary', empty: '全部环节', mode: 'multi', tree: true, searchable: true, searchHint: '搜索环节/节点' },
   { key: 'listed', label: '是否上市', group: 'advanced', empty: '不限', mode: 'single', options: [['all', '不限'], ['yes', '已上市'], ['no', '未上市']] },
   { key: 'honor', label: '企业荣誉', group: 'advanced', empty: '全部', mode: 'multi', searchable: true, searchHint: '搜索荣誉名称' },
   { key: 'phone', label: '联系电话', group: 'advanced', empty: '不限', mode: 'single', options: [['all', '不限'], ['yes', '有联系电话'], ['no', '无联系电话']] },
@@ -2132,7 +2132,7 @@ const COMPANY_FILTER_CONFIG = [
     options: [['lt100', '100 万以内'], ['b100_200', '100-200 万'], ['b200_500', '200-500 万'], ['b500_1000', '500-1000 万'], ['b1000_5000', '1000-5000 万'], ['gt5000', '5000 万以上']]
   },
   // 产业分析·上链企业分布头部的环节多选（独立 scope，不影响清单/抽屉）
-  { key: 'analysisNode', label: '产业环节', group: 'analysis', empty: '全部环节', mode: 'multi', tree: true, searchable: true, searchHint: '搜索环节 / 节点 / 路径' }
+  { key: 'analysisNode', label: '产业环节', group: 'analysis', empty: '全部环节', mode: 'multi', tree: true, searchable: true, searchHint: '搜索环节/节点' }
 ];
 
 function createCompanyFilterState() {
@@ -2898,15 +2898,14 @@ function exportCompanyTable() {
     showToast('当前筛选条件下暂无可导出的企业');
     return;
   }
-  const header = ['序号', '企业名称', '登记状态', '是否上市', '股票代码', '关联产业链节点', '企业荣誉', '联系电话', '联系邮箱', '成立日期', '法定代表人', '注册资本', '省份', '城市', '区县', '注册地址'];
+  const header = ['序号', '企业名称', '企业标签', '关联产业链节点', '企业荣誉', '联系电话', '联系邮箱', '成立日期', '法定代表人', '注册资本', '省份', '城市', '区县', '注册地址'];
   const lines = [header.map(csvCell).join(',')];
   rows.forEach(({ company, nodes }, index) => {
+    const companyTags = [company.operatingStatus || '在营', company.listed === '是' ? '已上市' : '未上市', company.stockCode || ''].filter(Boolean).join('、');
     lines.push([
       index + 1,
       company.displayName || company.name,
-      company.operatingStatus || '在营',
-      company.listed === '是' ? '已上市' : '未上市',
-      company.stockCode || '',
+      companyTags,
       nodes.join('、'),
       (company.honors || []).join('、'),
       (company.phones || []).join('；'),
@@ -3205,13 +3204,13 @@ function renderAnalysis(profile = getProfile()) {
   }
   renderAnalysisNodeFilter(profile);
   $('#distributionCompanyTotal').textContent = total.toLocaleString('zh-CN');
-  $('#distributionCompanyNote').textContent = topProvince && total ? `Top1 ${shortProvince(topProvince[0])} ${topProvince[1].toLocaleString('zh-CN')} 家 · 占 ${topProvinceShare}%` : '当前条件暂无企业样本';
+  $('#distributionCompanyNote').textContent = topProvince && total ? `Top1 ${shortProvince(topProvince[0])} ${topProvince[1].toLocaleString('zh-CN')} 家 · 占 ${topProvinceShare}%` : '当前条件暂无链上企业';
   $('#distributionCompanyBar').style.width = `${topProvinceShare}%`;
   $('#distributionStageTotal').textContent = coveredStages.toLocaleString('zh-CN');
   $('#distributionStageNote').textContent = stageTotal ? `已覆盖全部 ${stageTotal} 个产业环节的 ${Math.round(coveredStages / stageTotal * 100)}%` : '当前产业暂无环节数据';
   $('#distributionStageBar').style.width = `${stageTotal ? Math.round(coveredStages / stageTotal * 100) : 0}%`;
   $('#distributionCoreTotal').textContent = coreCompanies.toLocaleString('zh-CN');
-  $('#distributionCoreNote').textContent = `关联强度 ≥50 分（核心+重要） · 占企业样本 ${formatAnalysisPercent(coreCompanies, total)}`;
+  $('#distributionCoreNote').textContent = `关联强度 ≥50 分（核心+重要） · 占全部链上企业 ${formatAnalysisPercent(coreCompanies, total)}`;
   $('#distributionCoreBar').style.width = `${total ? Math.round(coreCompanies / total * 100) : 0}%`;
   renderDualTrendChart('listingTrendChart', trendEntries);
   $('#listingTrendNote').textContent = total
@@ -3220,7 +3219,7 @@ function renderAnalysis(profile = getProfile()) {
   renderCapitalColumns('analysisCapitalColumns', capitalBuckets);
   const topCapital = [...capitalBuckets].sort((first, second) => second[1] - first[1])[0];
   $('#capitalNote').textContent = total && topCapital && topCapital[1]
-    ? `注册资本主要集中在「${topCapital[0]}」区间，共 ${topCapital[1].toLocaleString('zh-CN')} 家，占样本 ${formatAnalysisPercent(topCapital[1], total)}`
+    ? `注册资本主要集中在「${topCapital[0]}」区间，共 ${topCapital[1].toLocaleString('zh-CN')} 家，占链上企业总数量 ${formatAnalysisPercent(topCapital[1], total)}`
     : '当前筛选条件暂无企业样本';
   $('#financingEventTotal').textContent = `${financingEvents.toLocaleString('zh-CN')} 起`;
   $('#financingKpis').innerHTML = [
@@ -3712,7 +3711,7 @@ function renderDistribution(companies = getVisibleCompanyRecords()) {
     : String(name).replace(/省|市|壮族自治区|回族自治区|维吾尔自治区|自治区/g, '');
   $('#provinceTop10').innerHTML = rankEntries.length
     ? rankEntries.map(([name, count], index) => `<div class="metric-bar-row"><span><em>${String(index + 1).padStart(2, '0')}</em>${escapeHtml(rankStrip(name))}</span><i><b class="metric-bar-fill-${index % 4}" style="width:${Math.max(6, Math.round(count / rankMax * 100))}%"></b></i><strong>${count.toLocaleString('zh-CN')} 家</strong></div>`).join('')
-    : '<div class="metric-empty">当前条件暂无企业样本</div>';
+    : '<div class="metric-empty">当前条件暂无链上企业</div>';
   // 散点按 SVG 实际绘制区域换算百分比，保证与省份图形对齐；容器暂无尺寸时退回 viewBox 百分比
   const mapVisual = $('.china-map-visual');
   const mapRect = mapVisual?.getBoundingClientRect();

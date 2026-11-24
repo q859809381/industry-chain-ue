@@ -187,8 +187,9 @@
   text-align: left;
   vertical-align: top;
   word-break: break-word;
+  overflow-wrap: anywhere;
 }
-.prd-doc table.prd-doc-table th { background: #eef5fa; color: #1d3a54; font-weight: 600; white-space: nowrap; }
+.prd-doc table.prd-doc-table th { background: #eef5fa; color: #1d3a54; font-weight: 600; white-space: normal; }
 .prd-doc table.prd-doc-table tr:nth-child(even) td { background: #f8fbfd; }
 
 .prd-doc-empty { padding: 40px 0; text-align: center; color: #8ba0b0; font-size: 12.5px; }
