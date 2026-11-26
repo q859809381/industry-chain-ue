@@ -7,6 +7,10 @@
   const AUTH_KEY = 'wudu-industry-auth'; // 密码登录演示账号
   const USER_KEY = 'wudu-industry-user';
   const USERS_KEY = 'wudu-industry-users';
+  // 运营管理后台「产业链价格」共用的存储键：后台设为仅联系客服时前台不展示价格
+  const CHAIN_PRICE_KEY = 'wudu-admin-chain-price';
+  // 在线咨询统一入口：右侧悬浮按钮与开通弹窗「联系客服」共用同一页面
+  const ONLINE_CONSULT_URL = 'https://affim.baidu.com/unique_64623122/chat?siteId=23037126&userId=64623122&siteToken=05cfe878b2e0ceed3e913161a3c4cdea&cp&cr&cw=www.datadowell.com';
   const DEFAULT_ACCOUNT = '13800138000';
   const DEFAULT_PASSWORD = '123456';
   const CAPTCHA_POOL = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
@@ -16,6 +20,22 @@
   let smsCountdown = 0;
   let captchaCode = '';
   let currentView = 'sms';
+
+  /* 产业链开通方式：默认「仅联系客服」——后台没有明确设置固定价格时一律人工沟通，
+   * 前台开通弹窗只保留联系客服入口，不展示任何价格示意。 */
+  function getChainSaleMode(chainName) {
+    try {
+      const map = JSON.parse(localStorage.getItem(CHAIN_PRICE_KEY) || '{}');
+      const record = chainName && map && map[chainName];
+      const price = Number(record && record.price);
+      if (record && record.mode === 'price' && Number.isFinite(price) && price > 0) {
+        return { mode: 'price', price: Math.round(price) };
+      }
+    } catch (error) {
+      // 配置损坏时按默认「仅联系客服」处理，不向用户展示错误
+    }
+    return { mode: 'contact', price: 0 };
+  }
 
   function boot() {
     if (document.getElementById('authShell')) return;
@@ -37,7 +57,7 @@
       '<div class="auth-inline-row"><input id="smsCodeInput" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="请输入验证码"><button type="button" class="auth-code-button" id="smsSendButton">获取验证码</button></div>',
       '<p class="auth-form-error" id="smsLoginError" role="alert"></p>',
       '<button class="auth-primary-button" type="submit">登录 / 注册</button>',
-      '<label class="auth-check auth-agreement"><input id="smsAgreement" type="checkbox"><span>勾选并同意 <a href="javascript:void(0)" data-agreement="user">用户协议</a> 与 <a href="javascript:void(0)" data-agreement="privacy">隐私政策</a></span></label>',
+      '<label class="auth-check auth-agreement"><input id="smsAgreement" type="checkbox"><span>勾选并同意 <a href="javascript:void(0)" data-agreement="service">用户服务协议</a> 与 <a href="javascript:void(0)" data-agreement="privacy">隐私政策</a></span></label>',
       '<p class="auth-login-footnote">未注册账号？登录即自动注册</p>',
       '</form>',
       '<form class="auth-form" id="passwordLoginForm" novalidate>',
@@ -54,9 +74,15 @@
       '<p class="dialog-description" id="upgradeDialogMessage"></p>',
       '<div class="upgrade-benefit-list">',
       '<span>收费用户专属权益</span>',
-      '<ul><li>按产业链开通：¥199 / 条，开通哪条看哪条</li><li>开通后可查看该产业链完整图谱，含各环节细分情况</li><li>可查看 / 下载上链企业清单，查看上链企业详情</li></ul>',
+      '<ul><li id="upgradePriceBenefit">按产业链开通：开通哪条看哪条</li><li>开通后可查看该产业链完整图谱，含各环节细分情况</li><li>可查看 / 下载上链企业清单，查看上链企业详情</li></ul>',
       '</div>',
       '<div class="upgrade-actions"><button type="button" class="upgrade-secondary-button" id="upgradeContactButton">联系客服</button><button type="button" class="auth-primary-button upgrade-primary-button" id="upgradeBuyButton">开通服务</button></div>',
+      '</div></div>',
+      // 协议正文弹窗（与个人中心共用 agreements.js 中的法务定稿）
+      '<div class="account-dialog-layer auth-agreement-layer" id="authAgreementLayer" aria-hidden="true">',
+      '<div class="account-dialog auth-agreement-dialog" role="dialog" aria-modal="true" aria-labelledby="authAgreementTitle">',
+      '<div class="account-dialog-header"><div><h2 id="authAgreementTitle">用户服务协议</h2></div><button type="button" class="dialog-close" data-auth-agreement-close aria-label="关闭">×</button></div>',
+      '<div class="auth-agreement-body" id="authAgreementBody"></div>',
       '</div></div>',
       // 二维码付款弹窗 + 右下角客服咨询窗口
       '<style>',
@@ -69,22 +95,27 @@
       '.pay-amount{margin:2px 0 12px;color:#e8400f;font-size:13px;font-weight:600;}',
       '.pay-amount b{font-size:30px;letter-spacing:-.5px;margin:0 2px;}',
       '.pay-amount span{color:#8a97a5;font-weight:400;}',
-      '#payQrCanvas{display:block;margin:0 auto 10px;border:1px solid #dfe7ee;border-radius:8px;}',
-      '.pay-note{margin:0 0 14px;font-size:11px;color:#8a97a5;}',
-      '.service-chat{position:fixed;right:20px;bottom:20px;z-index:1250;width:300px;max-width:calc(100vw - 40px);background:#fff;border-radius:12px;box-shadow:0 16px 44px rgba(16,34,51,.28);display:none;flex-direction:column;overflow:hidden;pointer-events:auto;}',
-      '.service-chat.is-open{display:flex;}',
-      '.service-chat-header{display:flex;flex-direction:column;padding:12px 14px;background:linear-gradient(135deg,#123c58,#1e5f86);color:#fff;}',
-      '.service-chat-header strong{font-size:14px;}',
-      '.service-chat-header small{font-size:11px;opacity:.8;margin-top:2px;}',
-      '.service-chat-close{position:absolute;top:8px;right:10px;width:24px;height:24px;border:0;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-size:14px;cursor:pointer;line-height:1;}',
-      '.service-chat-body{height:210px;overflow-y:auto;padding:12px;background:#f4f7fa;display:flex;flex-direction:column;gap:8px;}',
-      '.service-chat-msg{max-width:82%;padding:8px 11px;border-radius:10px;font-size:12px;line-height:1.6;white-space:pre-line;}',
-      '.service-chat-msg.agent{align-self:flex-start;background:#fff;border:1px solid #e2e9ef;color:#2c3e50;border-top-left-radius:2px;}',
-      '.service-chat-msg.user{align-self:flex-end;background:#1e6f9f;color:#fff;border-top-right-radius:2px;}',
-      '.service-chat-input{display:flex;gap:8px;padding:10px;border-top:1px solid #e6edf2;background:#fff;}',
-      '.service-chat-input input{flex:1;min-width:0;border:1px solid #d7e1e9;border-radius:8px;padding:7px 10px;font-size:12px;outline:none;}',
-      '.service-chat-input input:focus{border-color:#5d9bd4;}',
-      '.service-chat-input button{border:0;border-radius:8px;padding:0 14px;background:#1e6f9f;color:#fff;font-size:12px;cursor:pointer;}',
+      '#payQrCanvas{display:block;margin:0;border:1px solid #dfe7ee;border-radius:8px;}',
+      '#payDialogLayer [hidden]{display:none!important;}',
+      '.pay-term-row{display:flex;gap:8px;margin:8px 0 12px;}',
+      '.pay-term-option{flex:1;height:36px;border:1px solid #dfe7ee;border-radius:6px;background:#fff;color:#42586b;font-family:inherit;font-size:13px;font-weight:600;line-height:1;cursor:pointer;}',
+      '.pay-term-option:hover{border-color:#9fc7c4;}',
+      '.pay-term-option.is-active{border-color:#0c7773;background:#eef7f6;color:#0c7773;}',
+      '.pay-qr-wrap{position:relative;margin:0 auto 10px;width:max-content;}',
+      '.pay-qr-wrap.is-locked #payQrCanvas{filter:blur(7px);opacity:.72;}',
+      '.pay-qr-confirm{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2;min-width:72px;height:34px;padding:0 14px;border:0;border-radius:18px;background:#0c7773;color:#fff;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 3px 10px rgba(12,119,115,.28);}',
+      '.pay-qr-confirm:hover{background:#075e5b;}',
+      '.pay-method-mark{display:flex;align-items:center;justify-content:center;gap:6px;margin:0 0 12px;color:#09a761;font-size:12px;font-weight:600;}',
+      '.pay-method-mark svg{width:18px;height:18px;flex:0 0 auto;}',
+      '.pay-actions{display:flex;justify-content:center;}',
+      '.pay-note{margin:10px 0 0;font-size:11px;color:#8a97a5;}',
+      '.auth-agreement-layer{z-index:10005;}',
+      '.auth-agreement-dialog{width:min(720px,100%);max-height:min(82vh,820px);display:flex;flex-direction:column;padding:24px 28px 20px;}',
+      '.auth-agreement-body{overflow-y:auto;overscroll-behavior:contain;padding-right:10px;color:#52697e;font-size:12.5px;line-height:1.9;}',
+      '.auth-agreement-body h3{margin:2px 0 10px;color:#142e46;font-size:18px;text-align:center;}',
+      '.auth-agreement-body h4{margin:18px 0 4px;color:#1d3a52;font-size:13.5px;}',
+      '.auth-agreement-body p{margin:0 0 8px;color:#52697e;font-size:12.5px;line-height:1.9;}',
+      '.auth-agreement-body .uc-agreement-meta{margin:0 0 16px;padding-bottom:12px;border-bottom:1px solid #eef2f6;color:#98a8b8;font-size:12px;text-align:center;}',
       '.side-widget{position:fixed;right:18px;top:62%;transform:translateY(-50%);z-index:1240;display:flex;flex-direction:column;align-items:center;width:66px;padding:8px 0 4px;border:1px solid #e7edf2;border-radius:12px;background:#fff;box-shadow:0 8px 28px rgba(16,34,51,.14);pointer-events:auto;}',
       '.side-widget-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;padding:10px 0;border:0;background:none;color:#42586b;font-size:11px;font-weight:600;text-decoration:none;cursor:pointer;transition:color .2s ease;}',
       '.side-widget-item svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}',
@@ -103,28 +134,35 @@
       '<div class="pay-dialog" role="dialog" aria-modal="true" aria-labelledby="payDialogTitle">',
       '<div class="account-dialog-header"><div><h2 id="payDialogTitle">扫码支付</h2></div><button type="button" class="dialog-close" data-pay-close aria-label="关闭">×</button></div>',
       '<p class="pay-chain-line">开通对象：<strong id="payChainName">—</strong></p>',
-      '<div class="pay-amount">¥<b>199</b><span>/ 条产业链</span></div>',
+      '<div class="pay-term-row" id="payTermRow" role="radiogroup" aria-label="选择服务年限">',
+      '<button type="button" class="pay-term-option is-active" data-pay-term="1" role="radio" aria-checked="true">1年</button>',
+      '<button type="button" class="pay-term-option" data-pay-term="2" role="radio" aria-checked="false">2年</button>',
+      '<button type="button" class="pay-term-option" data-pay-term="3" role="radio" aria-checked="false">3年</button>',
+      '</div>',
+      '<div class="pay-amount" id="payAmountRow">¥<b id="payAmountValue">1,999</b><span id="payAmountUnit">/ 年</span></div>',
+      '<div class="pay-qr-wrap is-locked" id="payQrWrap">',
       '<canvas id="payQrCanvas" width="180" height="180" title="演示二维码"></canvas>',
-      '<button type="button" class="auth-primary-button" id="payConfirmButton">已完成支付</button>',
+      '<button type="button" class="pay-qr-confirm" id="payConfirmButton">确认</button>',
+      '</div>',
+      '<div class="pay-method-mark" id="payMethodMark" aria-label="仅支持微信支付">',
+      '<svg viewBox="0 0 28 28" aria-hidden="true"><path fill="#07c160" d="M11.5 3.5C6.3 3.5 2 7.2 2 11.8c0 2.6 1.4 4.9 3.7 6.4l-.9 2.9 3.3-1.6c1 .3 2.1.5 3.2.5h.7c-.3-.8-.4-1.6-.4-2.5 0-4.3 4.2-7.8 9.4-7.8h.6c-.8-3.3-4.6-5.7-9.1-5.7Z"/><path fill="#09bb07" d="M26 16.7c0-3.4-3.3-6.2-7.4-6.2s-7.4 2.8-7.4 6.2 3.3 6.2 7.4 6.2c.9 0 1.8-.1 2.7-.4l3 1.5-.9-2.6c1.7-1.1 2.6-2.8 2.6-4.7Z"/><circle cx="8.1" cy="10.4" r="1" fill="#fff"/><circle cx="13.9" cy="10.4" r="1" fill="#fff"/><circle cx="11.2" cy="15.2" r=".9" fill="#fff"/><circle cx="16.2" cy="15.2" r=".9" fill="#fff"/></svg>',
+      '<span>微信支付</span>',
+      '</div>',
+      '<div class="pay-actions">',
+      '<button type="button" class="auth-primary-button" id="payDoneButton" hidden>已完成支付</button>',
+      '</div>',
       '</div></div>',
       '<div class="side-widget" id="sideWidget" aria-label="咨询工具栏">',
       '<a class="side-widget-item" href="tel:010-68321050"><span class="side-widget-bubble" aria-hidden="true"><span class="side-widget-bubble-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span><span><small>咨询请拨打电话</small><strong>010-68321050</strong></span></span><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg><span>电话咨询</span></a>',
-      '<a class="side-widget-item" href="https://affim.baidu.com/unique_64623122/chat?siteId=23037126&userId=64623122&siteToken=05cfe878b2e0ceed3e913161a3c4cdea&cp&cr&cw=www.datadowell.com" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-2.9-.4-4.1-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/><path d="M8 10h8M8 13.5h5"/></svg><span>在线咨询</span></a>',
+      '<a class="side-widget-item" href="' + ONLINE_CONSULT_URL + '" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5c-1.5 0-2.9-.4-4.1-1.1L3 20l1.1-5.3A8.5 8.5 0 1 1 21 11.5z"/><path d="M8 10h8M8 13.5h5"/></svg><span>在线咨询</span></a>',
       '<button type="button" class="side-widget-item side-widget-backtop" id="backTopButton" aria-label="返回顶部" title="返回顶部"><svg viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg><span>返回顶部</span></button>',
       '</div>',
-      '<div class="service-chat" id="serviceChat" aria-hidden="true">',
-      '<div class="service-chat-header"><strong>客服咨询</strong><small>在线客服 · 工作日 9:00 - 18:00</small><button type="button" class="service-chat-close" id="serviceChatClose" aria-label="关闭">×</button></div>',
-      '<div class="service-chat-body" id="serviceChatBody"><div class="service-chat-msg agent"><span>您好，我是五度易链客服。产业链开通（¥199/条）、企业清单导出与数据合作都可以在这里咨询～</span></div></div>',
-      '<div class="service-chat-input"><input id="serviceChatInput" type="text" placeholder="输入您想咨询的问题" autocomplete="off"><button type="button" id="serviceChatSend">发送</button></div>',
-      '</div>',
-      // 头像菜单
+      // 头像菜单（点击头像或用户信息区进入个人中心，其余快捷功能保留在悬停菜单中）
       '<div class="account-menu" id="avatarMenu" role="menu" aria-hidden="true">',
-      '<div class="account-menu-header"><span class="account-menu-avatar" id="menuAvatar">W</span><div><strong id="menuAccount">未登录</strong><small id="menuUserType">游客</small></div></div>',
+      '<button type="button" class="account-menu-header account-menu-profile" data-account-action="profile" role="menuitem" title="进入个人中心"><span class="account-menu-avatar" id="menuAvatar">W</span><div><strong id="menuAccount">未登录</strong><small id="menuUserType">游客</small></div><svg class="ui-icon mini account-menu-header-caret"><use href="#icon-chevron-right"></use></svg></button>',
       '<div class="account-menu-divider"></div>',
+      '<button type="button" class="account-menu-item" data-account-action="profile" role="menuitem"><svg class="ui-icon mini"><use href="#icon-file"></use></svg><span>个人中心</span></button>',
       '<button type="button" class="account-menu-item" data-account-action="admin" role="menuitem" id="menuAdminItem"><svg class="ui-icon mini"><use href="#icon-grid"></use></svg><span>运营管理后台</span></button>',
-      '<button type="button" class="account-menu-item" data-account-action="username" role="menuitem"><svg class="ui-icon mini"><use href="#icon-book"></use></svg><span>用户名管理</span></button>',
-      '<button type="button" class="account-menu-item" data-account-action="change-phone" role="menuitem"><svg class="ui-icon mini"><use href="#icon-phone"></use></svg><span>变更手机号</span></button>',
-      '<button type="button" class="account-menu-item" data-account-action="change-password" role="menuitem"><svg class="ui-icon mini"><use href="#icon-layers"></use></svg><span>修改密码</span></button>',
       '<div class="account-menu-group">',
       '<button type="button" class="account-menu-item account-menu-parent" data-account-action="demo-perms" role="menuitem" aria-expanded="false"><svg class="ui-icon mini"><use href="#icon-spark"></use></svg><span>演示账号权限（测试）</span><svg class="ui-icon mini account-menu-caret"><use href="#icon-chevron-down"></use></svg></button>',
       '<div class="account-menu-sub" id="demoPermsSub" hidden>',
@@ -202,11 +240,23 @@
     const loginError = document.getElementById('loginError');
     const upgradeLayer = document.getElementById('upgradeDialogLayer');
     const upgradeMessage = document.getElementById('upgradeDialogMessage');
+    const upgradePriceBenefit = document.getElementById('upgradePriceBenefit');
+    const upgradeContactButton = document.getElementById('upgradeContactButton');
+    const upgradeBuyButton = document.getElementById('upgradeBuyButton');
     const payDialogLayer = document.getElementById('payDialogLayer');
     const payChainName = document.getElementById('payChainName');
     const payQrCanvas = document.getElementById('payQrCanvas');
-    const serviceChat = document.getElementById('serviceChat');
-    const serviceChatBody = document.getElementById('serviceChatBody');
+    const payAmountRow = document.getElementById('payAmountRow');
+    const payAmountValue = document.getElementById('payAmountValue');
+    const payAmountUnit = document.getElementById('payAmountUnit');
+    const payTermRow = document.getElementById('payTermRow');
+    const payTermButtons = [...authShell.querySelectorAll('[data-pay-term]')];
+    const payQrWrap = document.getElementById('payQrWrap');
+    const payConfirmButton = document.getElementById('payConfirmButton');
+    const payDoneButton = document.getElementById('payDoneButton');
+    let payYears = 1;
+    let payUnitPrice = 0;
+    let payStage = 'select';
     let upgradeChain = '';
     const avatarButton = document.getElementById('avatarButton') || document.querySelector('.avatar-button');
     const avatarMenu = document.getElementById('avatarMenu');
@@ -333,7 +383,7 @@
       event.preventDefault();
       const phone = smsPhone.value.trim();
       if (!/^1\d{10}$/.test(phone)) return setError(smsError, '请输入有效的11位手机号');
-      if (!document.getElementById('smsAgreement').checked) return setError(smsError, '请先勾选同意用户协议与隐私政策');
+      if (!document.getElementById('smsAgreement').checked) return setError(smsError, '请先勾选同意用户服务协议与隐私政策');
       if (!smsPending || smsPending.phone !== phone) return setError(smsError, '请先获取短信验证码');
       if (Date.now() > smsPending.expire) return setError(smsError, '验证码已过期，请重新获取');
       if (smsCodeInput.value.trim() !== smsPending.code) return setError(smsError, '短信验证码不正确');
@@ -396,8 +446,31 @@
       if (event.target === loginView || event.target.closest('[data-auth-close]')) closeLogin();
     });
 
+    /* 协议正文：与个人中心「服务协议」共用 agreements.js，点击链接查看对应法务定稿 */
+    const authAgreementLayer = document.getElementById('authAgreementLayer');
+    const authAgreementTitle = document.getElementById('authAgreementTitle');
+    const authAgreementBody = document.getElementById('authAgreementBody');
+    function openAgreement(key) {
+      if (!window.WuduAgreements || typeof window.WuduAgreements.render !== 'function') {
+        notify('协议内容加载失败，请刷新页面后重试');
+        return;
+      }
+      const type = key === 'privacy' ? 'privacy' : 'service';
+      authAgreementTitle.textContent = type === 'privacy' ? '隐私政策' : '用户服务协议';
+      authAgreementBody.innerHTML = window.WuduAgreements.render(type);
+      authAgreementBody.scrollTop = 0;
+      authAgreementLayer.classList.add('is-open');
+      authAgreementLayer.setAttribute('aria-hidden', 'false');
+    }
+    function closeAgreement() {
+      authAgreementLayer.classList.remove('is-open');
+      authAgreementLayer.setAttribute('aria-hidden', 'true');
+    }
+    authAgreementLayer.addEventListener('click', (event) => {
+      if (event.target === authAgreementLayer || event.target.closest('[data-auth-agreement-close]')) closeAgreement();
+    });
     authShell.querySelectorAll('[data-agreement]').forEach((link) => {
-      link.addEventListener('click', () => notify('协议文本为演示占位，正式版本接入法务定稿'));
+      link.addEventListener('click', () => openAgreement(link.dataset.agreement));
     });
 
     /* ---------- 开通服务对话框 ---------- */
@@ -405,7 +478,20 @@
       closeLogin();
       closeAvatarMenu();
       upgradeChain = chainName || '';
-      upgradeMessage.textContent = message || '开通产业链服务（¥199/条），开通后即可查看对应产业链图谱与上链企业。';
+      // 开通方式由运营管理后台配置：未配置固定价格时只走人工沟通
+      const sale = getChainSaleMode(upgradeChain);
+      const contactOnly = sale.mode === 'contact';
+      const base = message || '开通产业链服务后即可查看对应产业链图谱与上链企业。';
+      upgradeMessage.textContent = contactOnly
+        ? `${base}该产业链开通需联系客服沟通，客服会根据您的需求提供开通方案。`
+        : `${base}开通费用 ¥${sale.price.toLocaleString('zh-CN')} / 年，支持在线开通。`;
+      // 仅联系客服：移除在线开通按钮与所有价格示意，只保留客服入口并突出显示
+      upgradeBuyButton.hidden = contactOnly;
+      upgradePriceBenefit.hidden = contactOnly;
+      if (!contactOnly) upgradePriceBenefit.textContent = `按产业链开通：¥${sale.price.toLocaleString('zh-CN')} / 年，开通哪条看哪条`;
+      upgradeContactButton.classList.toggle('upgrade-secondary-button', !contactOnly);
+      upgradeContactButton.classList.toggle('auth-primary-button', contactOnly);
+      upgradeContactButton.classList.toggle('upgrade-primary-button', contactOnly);
       upgradeLayer.classList.add('is-open');
       upgradeLayer.setAttribute('aria-hidden', 'false');
     }
@@ -420,7 +506,8 @@
     });
     document.getElementById('upgradeContactButton').addEventListener('click', () => {
       closeUpgrade();
-      openServiceChat();
+      // 与右侧悬浮栏「在线咨询」打开同一个客服页面
+      openOnlineConsult();
     });
     document.getElementById('upgradeBuyButton').addEventListener('click', () => {
       const user = getUser();
@@ -505,6 +592,7 @@
       setStepError('usernameError', '');
       closeAccountDialog(usernameDialogLayer);
       notify('用户名设置成功，可用于用户名密码登录');
+      document.dispatchEvent(new CustomEvent('wudu-account-updated'));
     });
 
     /* —— 变更手机号（两步：验证当前 → 绑定新手机号） —— */
@@ -573,6 +661,7 @@
       closeAccountDialog(phoneDialogLayer);
       updateAuthUi();
       notify('手机号变更成功，请使用新手机号登录');
+      document.dispatchEvent(new CustomEvent('wudu-account-updated'));
       document.dispatchEvent(new CustomEvent('wudu-auth-change', { detail: { phone: newPhone, type: user.type, chains: user.chains || [] } }));
     });
 
@@ -632,9 +721,10 @@
       setStepError('passwordStep2Error', '');
       closeAccountDialog(passwordDialogLayer);
       notify('密码修改成功，请使用新密码登录');
+      document.dispatchEvent(new CustomEvent('wudu-account-updated'));
     });
 
-    /* ---------- 二维码付款弹窗（按条开通 ¥199） ---------- */
+    /* ---------- 二维码付款弹窗（年价取后台配置，支持 1/2/3 年） ---------- */
     function drawPayQr(seedText) {
       const ctx = payQrCanvas.getContext('2d');
       const size = payQrCanvas.width;
@@ -664,13 +754,52 @@
       });
     }
 
+    function updatePayAmount() {
+      const total = Math.round(payUnitPrice * payYears);
+      payAmountValue.textContent = total.toLocaleString('zh-CN');
+      payAmountUnit.textContent = payYears === 1 ? '/ 年' : `/ ${payYears}年`;
+    }
+
+    function markPayTerm() {
+      payTermButtons.forEach((button) => {
+        const active = Number(button.dataset.payTerm) === payYears;
+        button.classList.toggle('is-active', active);
+        button.setAttribute('aria-checked', String(active));
+      });
+    }
+
+    function payQrSeed(suffix) {
+      const user = getUser();
+      const total = Math.round(payUnitPrice * payYears);
+      return `${upgradeChain || 'chain'}|${user ? user.phone : 'guest'}|${payYears}|${total}|${suffix}`;
+    }
+
+    // 固定价格：二维码默认模糊并叠加「确认」；确认后去掉模糊与按钮，展示真实收款码
+    function setPayStage(stage) {
+      payStage = stage;
+      const priceMode = getChainSaleMode(upgradeChain).mode === 'price';
+      const confirmed = stage === 'qr';
+      payTermRow.hidden = !priceMode;
+      payAmountRow.hidden = !priceMode;
+      payQrWrap.hidden = false;
+      payQrWrap.classList.toggle('is-locked', priceMode && !confirmed);
+      payConfirmButton.hidden = !priceMode || confirmed;
+      payDoneButton.hidden = !confirmed;
+      drawPayQr(payQrSeed(confirmed ? Date.now() : 'preview'));
+    }
+
     function openPayDialog(chainName) {
       closeUpgrade();
-      const user = getUser();
+      const sale = getChainSaleMode(chainName);
       payChainName.textContent = chainName ? `${chainName}产业链` : '指定产业链（开通后可联系客服指定）';
+      payUnitPrice = sale.mode === 'price' ? sale.price : 0;
+      payYears = 1;
+      markPayTerm();
+      updatePayAmount();
       payDialogLayer.classList.add('is-open');
       payDialogLayer.setAttribute('aria-hidden', 'false');
-      drawPayQr(`${chainName || 'chain'}|${user ? user.phone : 'guest'}|${Date.now()}`);
+      // 仅联系客服的演示订单保留原扫码流程：无年限、无价格，直接展示二维码
+      setPayStage(sale.mode === 'price' ? 'select' : 'qr');
     }
 
     function closePayDialog() {
@@ -681,31 +810,47 @@
     payDialogLayer.addEventListener('click', (event) => {
       if (event.target === payDialogLayer || event.target.closest('[data-pay-close]')) closePayDialog();
     });
-    document.getElementById('payConfirmButton').addEventListener('click', () => {
-      purchaseChain(upgradeChain);
+    payTermButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const wasConfirmed = payStage === 'qr';
+        payYears = Math.max(1, Number(button.dataset.payTerm) || 1);
+        markPayTerm();
+        updatePayAmount();
+        // 已确认收款码后切换年限，需要重新确认，避免金额与二维码不一致
+        if (wasConfirmed) setPayStage('select');
+        else drawPayQr(payQrSeed('preview'));
+      });
     });
+    payConfirmButton.addEventListener('click', () => setPayStage('qr'));
+    payDoneButton.addEventListener('click', () => purchaseChain(upgradeChain, payYears));
 
     // 演示支付成功：记录已开通的产业链（收费用户按条开通，不解锁全部）
-    function purchaseChain(chainName) {
+    function purchaseChain(chainName, years = 1) {
       const user = getUser();
       if (!user) return openLogin('请先登录后再开通服务');
+      const term = Math.max(1, Number(years) || 1);
       const chains = new Set(Array.isArray(user.chains) ? user.chains : []);
       if (chainName) chains.add(chainName);
       signIn(user.phone, 'paid', { chains: [...chains] });
+      // 用户端「我的订单」同步生成一条支付完成的订单，服务期与扫码时选择的一致
+      if (window.WuduUserCenter && typeof window.WuduUserCenter.recordPurchase === 'function') {
+        const sale = getChainSaleMode(chainName);
+        window.WuduUserCenter.recordPurchase(chainName, user.phone, sale.mode === 'price' ? sale.price : 0, term);
+      }
       closePayDialog();
-      notify(chainName ? `「${chainName}」开通成功（演示支付），可查看该产业链图谱与上链企业` : '开通成功（演示支付）');
+      notify(chainName ? `「${chainName}」${term}年服务已开通（演示支付），可查看该产业链图谱与上链企业` : '开通成功（演示支付）');
     }
 
     /* ---------- 右侧咨询工具栏（电话咨询 / 在线咨询 / 返回顶部） ---------- */
-    function openServiceChat() {
-      serviceChat.classList.add('is-open');
-      serviceChat.setAttribute('aria-hidden', 'false');
-      serviceChatBody.scrollTop = serviceChatBody.scrollHeight;
-    }
-
-    function closeServiceChat() {
-      serviceChat.classList.remove('is-open');
-      serviceChat.setAttribute('aria-hidden', 'true');
+    // 开通弹窗的「联系客服」复用在线咨询入口：构造临时链接点击，行为与右侧按钮完全一致
+    function openOnlineConsult() {
+      const link = document.createElement('a');
+      link.href = ONLINE_CONSULT_URL;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     }
 
     // 返回顶部：跟随页面滚动自动出现/隐藏（滚动超过一屏的 40% 时出现）
@@ -723,41 +868,40 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    document.getElementById('serviceChatClose').addEventListener('click', closeServiceChat);
-    function sendServiceChatMessage() {
-      const input = document.getElementById('serviceChatInput');
-      const text = (input.value || '').trim();
-      if (!text) return;
-      input.value = '';
-      const userMsg = document.createElement('div');
-      userMsg.className = 'service-chat-msg user';
-      userMsg.innerHTML = `<span></span>`;
-      userMsg.querySelector('span').textContent = text;
-      serviceChatBody.appendChild(userMsg);
-      serviceChatBody.scrollTop = serviceChatBody.scrollHeight;
-      setTimeout(() => {
-        const reply = document.createElement('div');
-        reply.className = 'service-chat-msg agent';
-        reply.innerHTML = '<span>收到您的咨询，客服会尽快与您联系。您也可以直接点击「开通服务」按条开通产业链（¥199/条）。</span>';
-        serviceChatBody.appendChild(reply);
-        serviceChatBody.scrollTop = serviceChatBody.scrollHeight;
-      }, 700);
-    }
-    document.getElementById('serviceChatSend').addEventListener('click', sendServiceChatMessage);
-    document.getElementById('serviceChatInput').addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') sendServiceChatMessage();
-    });
-
     /* ---------- 头像按钮与菜单 ---------- */
+    // 点击头像：直接进入个人中心；鼠标悬停：展开快捷菜单（个人中心 / 后台 / 演示权限 / 退出登录）
+    let menuHoverTimer = null;
+    function showAvatarMenuOnHover() {
+      if (!getUser()) return;
+      clearTimeout(menuHoverTimer);
+      if (!avatarMenu.classList.contains('is-open')) toggleAvatarMenu();
+    }
+    function scheduleAvatarMenuClose() {
+      clearTimeout(menuHoverTimer);
+      menuHoverTimer = setTimeout(() => {
+        if (avatarMenu.classList.contains('is-open')) closeAvatarMenu();
+      }, 220);
+    }
     if (avatarButton) {
       avatarButton.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();
         if (!getUser()) { openLogin(); return; }
         closeLogin();
-        toggleAvatarMenu();
+        closeAvatarMenu();
+        if (window.WuduUserCenter) window.WuduUserCenter.open();
+      });
+      avatarButton.addEventListener('mouseenter', showAvatarMenuOnHover);
+      avatarButton.addEventListener('mouseleave', scheduleAvatarMenuClose);
+      avatarButton.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowDown' && getUser()) {
+          event.preventDefault();
+          showAvatarMenuOnHover();
+        }
       });
     }
+    avatarMenu.addEventListener('mouseenter', () => clearTimeout(menuHoverTimer));
+    avatarMenu.addEventListener('mouseleave', scheduleAvatarMenuClose);
 
     avatarMenu.addEventListener('click', (event) => {
       const actionButton = event.target.closest('[data-account-action]');
@@ -773,7 +917,11 @@
         return;
       }
       closeAvatarMenu();
-      if (action === 'upgrade') openUpgrade('开通产业链服务：¥199 / 条，开通哪条看哪条。也可联系客服咨询企业级方案。');
+      if (action === 'profile') {
+        if (window.WuduUserCenter) window.WuduUserCenter.open();
+        return;
+      }
+      if (action === 'upgrade') openUpgrade('开通产业链服务后即可查看对应产业链图谱与上链企业。');
       if (action === 'downgrade') {
         const user = getUser();
         if (user) signIn(user.phone, 'registered', { silent: true });
@@ -785,9 +933,6 @@
         if (!user.admin) return notify('当前账号未开通后台管理权限，请联系管理员');
         window.location.href = 'admin.html';
       }
-      if (action === 'username') openUsernameDialog();
-      if (action === 'change-phone') openPhoneDialog();
-      if (action === 'change-password') openPasswordDialog();
       if (action === 'logout') logout();
     });
 
@@ -801,7 +946,6 @@
       else if (usernameDialogLayer.classList.contains('is-open')) closeAccountDialog(usernameDialogLayer);
       else if (payDialogLayer.classList.contains('is-open')) closePayDialog();
       else if (upgradeLayer.classList.contains('is-open')) closeUpgrade();
-      else if (serviceChat.classList.contains('is-open')) closeServiceChat();
       else if (loginView.classList.contains('is-open')) closeLogin();
       else closeAvatarMenu();
     });
@@ -883,7 +1027,21 @@
       getUserType,
       openLogin,
       openUpgrade,
-      logout
+      // 供前台其他模块读取后台配置的开通方式（默认仅联系客服）
+      getChainSaleMode,
+      logout,
+      // 个人中心「账号设置」复用已有的三个账号管理弹窗
+      openAccountSetting: (type) => {
+        if (!getUser()) return openLogin();
+        if (type === 'username') openUsernameDialog();
+        else if (type === 'phone') openPhoneDialog();
+        else if (type === 'password') openPasswordDialog();
+      },
+      // 个人中心「我的订单」待支付订单跳转支付
+      payForChain: (chainName) => {
+        upgradeChain = chainName || '';
+        openPayDialog(chainName || '');
+      }
     };
     // 存储键名暴露：后台管理平台（admin.js）共用同一份账号数据
     window.WUDU_AUTH_KEYS = { USER_KEY, USERS_KEY, AUTH_KEY };

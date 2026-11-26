@@ -385,6 +385,11 @@
   gap: 12px;
 }
 
+/* 仅联系客服模式下隐藏在线开通按钮与价格示意，避免按钮样式覆盖 [hidden] */
+.upgrade-actions [hidden],
+.upgrade-benefit-list li[hidden],
+.pay-amount[hidden] { display: none !important; }
+
 .upgrade-secondary-button {
   flex: 1 1 50%;
   min-height: 46px;
@@ -433,10 +438,31 @@
 }
 
 .account-menu-header {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 11px;
+  box-sizing: border-box;
   padding: 10px 10px 12px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.account-menu-profile:hover {
+  background: #f0f7f6;
+}
+
+.account-menu-header-caret {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: #9fb0b3;
+}
+
+.account-menu-profile:hover .account-menu-header-caret {
+  color: #0c7773;
 }
 
 .account-menu-avatar {

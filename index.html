@@ -7,10 +7,11 @@
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23102a43'/%3E%3Cpath d='M8 16 16 7l8 9-8 9-8-9Z' fill='none' stroke='%2353b9ff' stroke-width='2'/%3E%3Cpath d='M16 11v10' stroke='%2326d5c3' stroke-width='2'/%3E%3C/svg%3E" />
     <title>五度易链 | 产业上链 Agent</title>
-    <link rel="stylesheet" href="styles.css?v=202611181115" />
+    <link rel="stylesheet" href="styles.css?v=202611251130" />
     <link rel="stylesheet" href="company-detail.css?v=202610271141" />
-    <link rel="stylesheet" href="auth.css?v=202611161640" />
+    <link rel="stylesheet" href="auth.css?v=202611260945" />
     <link rel="stylesheet" href="prd-drawer.css?v=202611121022" />
+    <link rel="stylesheet" href="user-center.css?v=202611261012" />
   </head>
   <body>
     <svg class="icon-sprite" aria-hidden="true" focusable="false">
@@ -642,6 +643,36 @@
               </footer>
             </div>
           </section>
+
+          <section class="view-panel user-center-view" id="userCenterView" data-panel="user-center" aria-label="个人中心">
+            <div class="uc-wrap" id="ucWrap">
+              <div class="uc-body">
+                <aside class="uc-side">
+                  <div class="uc-profile-card"><span class="uc-avatar" id="ucSideAvatar">W</span><div><strong id="ucSideName">未登录</strong><small id="ucSideType">—</small></div></div>
+                  <nav class="uc-nav" id="ucNav" aria-label="个人中心导航">
+                    <button type="button" class="uc-nav-item" data-uc-view="services"><svg class="ui-icon mini"><use href="#icon-layers"></use></svg><span>我的服务</span></button>
+                    <button type="button" class="uc-nav-item" data-uc-view="orders"><svg class="ui-icon mini"><use href="#icon-file"></use></svg><span>我的订单</span></button>
+                    <button type="button" class="uc-nav-item" data-uc-view="notices"><svg class="ui-icon mini"><use href="#icon-info"></use></svg><span>通知中心</span><b class="uc-badge" id="ucNoticeBadge" hidden>0</b></button>
+                    <div class="uc-nav-group" id="ucSecurityGroup">
+                      <button type="button" class="uc-nav-item uc-nav-section" data-uc-security-toggle aria-expanded="true"><svg class="ui-icon mini"><use href="#icon-sliders"></use></svg><span>安全中心</span><svg class="ui-icon mini uc-nav-caret"><use href="#icon-chevron-down"></use></svg></button>
+                      <div class="uc-nav-sub-list" id="ucSecurityList">
+                        <button type="button" class="uc-nav-item uc-nav-sub" data-uc-view="account"><svg class="ui-icon mini"><use href="#icon-sliders"></use></svg><span>账号设置</span></button>
+                        <button type="button" class="uc-nav-item uc-nav-sub" data-uc-view="agreement"><svg class="ui-icon mini"><use href="#icon-book"></use></svg><span>服务协议</span></button>
+                      </div>
+                    </div>
+                  </nav>
+                </aside>
+                <main class="uc-main" id="ucMain"></main>
+              </div>
+              <div class="uc-detail-layer" id="ucDetailLayer" aria-hidden="true">
+                <div class="uc-detail-dialog" role="dialog" aria-modal="true" aria-labelledby="ucDetailTitle">
+                  <div class="uc-detail-head"><strong id="ucDetailTitle">订单详情</strong><button type="button" class="uc-detail-close" id="ucDetailClose" aria-label="关闭">×</button></div>
+                  <div class="uc-detail-body" id="ucDetailBody"></div>
+                  <div class="uc-detail-foot"><button type="button" class="uc-detail-primary" id="ucDetailOk">知道了</button></div>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
     </div>
@@ -712,9 +743,11 @@
     <script src="industry-category-data.js?v=202611041710"></script>
     <script src="china-map-data.js?v=202609141500"></script>
     <script src="coze-chat.js?v=202610301005"></script>
-    <script src="app.js?v=202611181115"></script>
+    <script src="app.js?v=202611260945"></script>
     <script src="company-detail.js?v=202611101130"></script>
-    <script src="auth.js?v=202611161640"></script>
+    <script src="agreements.js?v=202611261225"></script>
+    <script src="auth.js?v=202611261215"></script>
+    <script src="user-center.js?v=202611261210"></script>
     <script src="prd-content.js?v=202611121022"></script>
     <script src="prd-drawer.js?v=202611121022"></script>
   </body>

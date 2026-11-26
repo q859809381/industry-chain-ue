@@ -18,6 +18,9 @@ button { font: inherit; cursor: pointer; }
 
 /* ---------- 顶栏 ---------- */
 .admin-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -60,55 +63,70 @@ button { font: inherit; cursor: pointer; }
 .admin-breadcrumb i { font-style: normal; color: #c9cdd4; }
 .admin-breadcrumb b { font-weight: 500; color: #1f2329; }
 
-.admin-topbar-user { display: flex; align-items: center; gap: 10px; }
+.admin-topbar-account { position: relative; }
 
-.admin-topbar-avatar {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #e8f3ff;
-  color: #1677ff;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.admin-topbar-user strong { font-size: 13px; color: #1f2329; }
-
-.admin-topbar-role {
-  padding: 2px 8px;
+.admin-topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 0;
   border-radius: 4px;
-  background: #f2f3f5;
-  color: #86909c;
-  font-size: 11.5px;
+  background: transparent;
+  color: #1f2329;
 }
+.admin-topbar-user:hover { background: #f7f8fa; }
+.admin-topbar-user span { font-size: 13px; }
+.admin-topbar-caret { width: 14px; height: 14px; fill: none; stroke: #86909c; stroke-width: 1.6; transition: transform .15s ease; }
+.admin-topbar-user[aria-expanded="true"] .admin-topbar-caret { transform: rotate(180deg); }
 
-.admin-logout {
-  padding: 5px 12px;
+.admin-user-popover {
+  position: absolute;
+  right: 0;
+  top: 38px;
+  z-index: 1000;
+  min-width: 112px;
+  padding: 4px;
   border: 1px solid #e5e6eb;
   border-radius: 4px;
   background: #fff;
-  color: #4e5969;
-  font-size: 12.5px;
-  transition: color .15s ease, border-color .15s ease;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .08);
 }
-
-.admin-logout:hover { border-color: #1677ff; color: #1677ff; }
+.admin-user-popover[hidden] { display: none; }
+.admin-popover-item {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: #1f2329;
+  font-size: 12.5px;
+  text-align: left;
+}
+.admin-popover-item:hover { background: #f7f8fa; color: #1677ff; }
+.admin-popover-item.is-danger:hover { background: #fff1f0; color: #f53f3f; }
 
 /* ---------- 布局 ---------- */
-.admin-shell { display: flex; align-items: stretch; min-height: calc(100vh - 52px); }
+.admin-shell { display: flex; align-items: flex-start; min-height: calc(100vh - 52px); }
 
-/* 侧边栏（白色） */
+/* 侧边栏（白色）
+ * 粘性整列：内容区再长，导航与底部「返回前台」也始终停在视口内，
+ * 不会像之前那样被主内容撑高、把页脚顶到页面最底部（需滚到底才能看到）。
+ */
 .admin-sidebar {
   flex: 0 0 200px;
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
   display: flex;
   flex-direction: column;
   background: #fff;
   border-right: 1px solid #f0f0f0;
 }
 
-.admin-nav { flex: 1 1 auto; padding: 12px 8px; display: grid; gap: 2px; align-content: start; }
+/* 导航项超出视口高度时在侧栏内部滚动，保证页脚常驻可见 */
+.admin-nav { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 12px 8px; display: grid; gap: 2px; align-content: start; }
 
 .admin-nav-item {
   width: 100%;
@@ -164,7 +182,7 @@ button { font: inherit; cursor: pointer; }
 .admin-nav-subitem:hover .admin-nav-dot { background: #86909c; }
 .admin-nav-subitem.is-active .admin-nav-dot { background: #1677ff; }
 
-.admin-sidebar-footer { padding: 10px 8px 14px; border-top: 1px solid #f0f0f0; }
+.admin-sidebar-footer { flex: 0 0 auto; padding: 10px 8px 14px; border-top: 1px solid #f0f0f0; }
 
 .admin-back-link {
   display: flex;
@@ -202,8 +220,6 @@ button { font: inherit; cursor: pointer; }
 .admin-view { display: none; }
 .admin-view.is-active { display: block; }
 
-.admin-toolbar-tip { margin: 0 0 14px; color: #86909c; font-size: 12.5px; line-height: 1.7; }
-
 /* ---------- 产业链价格 ---------- */
 .admin-price-table { table-layout: fixed; width: 100%; }
 .admin-price-table .th-name { width: 300px; }
@@ -217,11 +233,18 @@ button { font: inherit; cursor: pointer; }
 /* 所属分类：与图谱列表的分类名保持一致，单行展示避免高度抖动 */
 .admin-price-table .admin-price-category { white-space: nowrap; }
 .admin-price-value { color: #1f2329; font-weight: 500; }
+.admin-price-value small { color: #86909c; font-size: 11px; font-weight: 400; }
+/* 默认开通方式：弱化的灰蓝标签，不与固定价格争夺视觉重点 */
+.admin-price-contact { display: inline-block; padding: 1px 6px; border: 1px solid #e5e6eb; border-radius: 3px; background: #f7f8fa; color: #6b7785; font-size: 11.5px; font-weight: 400; }
 .admin-price-none { color: #c9cdd4; }
 .admin-price-foot { padding: 12px 16px 4px; color: #86909c; font-size: 12px; }
 .admin-dialog-price { width: min(500px, calc(100vw - 32px)); }
 .admin-confirm-row.is-input { align-items: center; }
 .admin-confirm-row.is-input em { color: #f53f3f; font-style: normal; margin-left: 2px; }
+.admin-confirm-row[hidden] { display: none !important; }
+.admin-price-modes { display: flex; align-items: center; gap: 18px; }
+.admin-price-mode { display: inline-flex; align-items: center; gap: 6px; color: #4e5969; font-size: 13px; cursor: pointer; }
+.admin-price-mode input { width: 14px; height: 14px; margin: 0; accent-color: #1677ff; cursor: pointer; }
 .admin-price-input { display: flex; align-items: center; gap: 8px; }
 .admin-price-input input {
   width: 148px; height: 32px; padding: 0 10px; border: 1px solid #e5e6eb; border-radius: 4px;
@@ -239,7 +262,7 @@ button { font: inherit; cursor: pointer; }
   margin: 8px 0 0; padding: 0 2px; color: #86909c; font-size: 12px; line-height: 1.6;
 }
 .admin-price-note b { color: #4e5969; font-weight: 500; }
-/* 已开通服务的成交价：与当前标价不同时，主价加粗、现价同行小字灰显，避免撑高行高 */
+/* 已开通服务的成交价：与标价不同时，主价加粗（成交价）、原价同行小字灰显，避免撑高行高 */
 .admin-deal-price { color: #1f2329; font-weight: 500; white-space: nowrap; }
 .admin-deal-now { margin-left: 5px; color: #a9aeb8; font-size: 11px; font-style: normal; white-space: nowrap; }
 /* 服务状态：圆点 + 文字（绿=生效中、红=已到期），开通服务管理与用户详情共用 */
@@ -364,9 +387,9 @@ button { font: inherit; cursor: pointer; }
 
 .admin-row-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-.admin-row-btn:hover { border-color: #1677ff; background: #f2f8ff; color: #1677ff; }
+.admin-row-btn:not(:disabled):hover { border-color: #1677ff; background: #f2f8ff; color: #1677ff; }
 
-.admin-row-btn.is-danger:hover { border-color: #ff4d4f; background: #fff2f0; color: #ff4d4f; }
+.admin-row-btn.is-danger:not(:disabled):hover { border-color: #ff4d4f; background: #fff2f0; color: #ff4d4f; }
 
 .admin-row-btn:disabled { opacity: .45; cursor: not-allowed; border-color: #e5e6eb; background: #fff; color: #c9cdd4; }
 
@@ -390,6 +413,40 @@ button { font: inherit; cursor: pointer; }
 .admin-table-tools input { width: 260px; min-height: 32px; padding: 0 12px; border: 1px solid #e5e6eb; border-radius: 4px; font: inherit; font-size: 13px; outline: none; transition: border-color .15s ease; }
 
 .admin-table-tools input:focus { border-color: #1677ff; }
+
+#userServicePicker { flex: 0 0 180px; width: 180px; }
+/* 角色管理筛选与批量操作 */
+.admin-role-status-select { width: 110px; min-height: 32px; padding: 0 10px; border: 1px solid #e5e6eb; border-radius: 4px; background: #fff; font: inherit; font-size: 13px; color: #1f2329; outline: none; cursor: pointer; }
+.admin-role-status-select:focus { border-color: #1677ff; }
+.admin-role-batch { display: inline-flex; gap: 6px; margin-left: auto; }
+.admin-role-batch .admin-btn { min-height: 30px; padding: 0 12px; }
+/* 角色表格：角色名称贴近勾选框 */
+#roleTable th:first-child, #roleTable td:first-child { width: 36px; padding-right: 6px; }
+#roleTable th:nth-child(2), #roleTable td:nth-child(2) { padding-left: 4px; }
+/* 用户 / 管理员账号表格：勾选列 */
+#userTable th:first-child, #userTable td:first-child,
+#accountTable th:first-child, #accountTable td:first-child { width: 36px; padding-right: 6px; text-align: center; }
+
+.admin-role-name-wrap { position: relative; display: block; }
+.admin-role-name-wrap input { width: 100%; padding-right: 58px !important; }
+.admin-role-name-wrap i { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #a9aeb8; font-size: 12px; font-style: normal; pointer-events: none; }
+.admin-role-perm-label { margin-bottom: -6px; font-size: 12.5px; color: #4e5969; }
+.admin-role-perm-tree { max-height: 46vh; overflow-y: auto; padding: 10px 12px; border: 1px solid #e5e6eb; border-radius: 4px; }
+.admin-role-tree-group + .admin-role-tree-group { margin-top: 6px; }
+.admin-role-tree-row { display: flex; align-items: center; gap: 7px; min-height: 28px; font-size: 12.5px; color: #1f2329; }
+.admin-role-tree-row.is-module { font-weight: 600; color: #4e5969; }
+.admin-role-tree-name { display: inline-flex; flex-direction: column; gap: 2px; line-height: 1.35; }
+.admin-role-tree-name i { font-style: normal; font-size: 11.5px; color: #6b7280; font-weight: 400; }
+.admin-role-tree-children { margin-left: 20px; padding-left: 10px; border-left: 1px dashed #e5e6eb; }
+.admin-role-tree-row input[type="checkbox"] { width: 14px; height: 14px; margin: 0; accent-color: #1677ff; cursor: pointer; }
+.admin-role-tree-caret { width: 14px; height: 14px; fill: none; stroke: #86909c; stroke-width: 1.6; transition: transform .15s ease; cursor: pointer; }
+.admin-role-tree-caret.is-collapsed { transform: rotate(-90deg); }
+.admin-role-tree-children[hidden] { display: none; }
+.admin-text-op { padding: 0 6px; border: 0; background: transparent; color: #1677ff; font: inherit; font-size: 12.5px; cursor: pointer; }
+.admin-text-op + .admin-text-op { border-left: 1px solid #e5e6eb; }
+.admin-text-op:hover { text-decoration: underline; }
+.admin-text-op.is-danger { color: #ff4d4f; }
+.admin-text-op:disabled { color: #c9cdd4; cursor: not-allowed; text-decoration: none; }
 
 .admin-table-wrap { overflow-x: auto; }
 
@@ -621,6 +678,28 @@ button { font: inherit; cursor: pointer; }
 }
 
 .admin-form input:focus, .admin-form select:focus { border-color: #1677ff; }
+.admin-form input:disabled { background: #f7f8fa; color: #86909c; cursor: not-allowed; }
+.admin-form-hint { margin-left: 6px; color: #a9aeb8; font-size: 11px; font-style: normal; font-weight: 400; }
+.admin-form-status { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4e5969; }
+.admin-form-status > em { color: #f53f3f; font-style: normal; }
+.admin-form-status > span { display: inline-flex; align-items: center; gap: 20px; }
+.admin-form-status label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.admin-form-status input[type="radio"] { width: 14px; min-height: 0; padding: 0; margin: 0; accent-color: #1677ff; }
+/* 管理员账号弹窗：标签文字与必填星号同行，输入框另起一行 */
+#accountDialogLayer .admin-form > label,
+#accountPwdDialogLayer .admin-form > label,
+#roleDialogLayer .admin-form > label { display: block; }
+#accountDialogLayer .admin-form > label input,
+#accountDialogLayer .admin-form > label select,
+#accountPwdDialogLayer .admin-form > label input,
+#roleDialogLayer .admin-form > label input { display: block; width: 100%; margin-top: 6px; }
+/* 编辑默认超管账号时隐藏角色名称与状态字段，需覆盖上面的 display:block */
+#accountDialogLayer .admin-form > label[hidden],
+#accountDialogLayer .admin-form-status[hidden],
+#roleDialogLayer .admin-form-status[hidden] { display: none; }
+/* 超级管理员权限勾选：与普通角色完全一致的原生小勾选框，仅禁用交互表示锁定不可取消 */
+.admin-role-perm-tree .admin-check[data-locked] { pointer-events: none; opacity: .85; }
+#roleDialogLayer .admin-dialog { width: min(620px, 100%); }
 
 /* ---------- Toast ---------- */
 .admin-toast {
@@ -730,7 +809,7 @@ button { font: inherit; cursor: pointer; }
 .admin-dialog-table .admin-select { max-width: 150px; }
 
 /* ===== 用户管理：搜索栏 / 数量链接 / 分页 / 详情弹窗 ===== */
-.admin-tool-label { color: #4e5969; font-size: 13px; }
+.admin-tool-label { color: #4e5969; font-size: 13px; white-space: nowrap; }
 .admin-tool-sep { color: #c9cdd4; font-style: normal; }
 .admin-date-input {
   height: 32px; padding: 0 8px; border: 1px solid #e5e6eb; border-radius: 4px;
@@ -874,6 +953,21 @@ button { font: inherit; cursor: pointer; }
 .admin-order-paid { white-space: nowrap; color: #1f2329; font-weight: 500; }
 .admin-order-link { padding: 0; border: 0; background: transparent; color: #1677ff; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
 .admin-order-link:hover { text-decoration: underline; }
+/* 订单管理页：搜索框、汇总条、单元格副信息 */
+.admin-order-search { width: 250px; min-height: 32px; padding: 0 10px; border: 1px solid #e5e6eb; border-radius: 4px; background: #fff; font: inherit; font-size: 13px; color: #1f2329; outline: none; }
+.admin-order-search:focus { border-color: #1677ff; }
+.admin-order-summary { display: flex; flex-wrap: wrap; gap: 12px; padding: 0 16px; margin-bottom: 12px; }
+.admin-order-stat { flex: 0 1 240px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-width: 200px; padding: 12px 16px; border: 1px solid #f0f1f3; border-radius: 6px; background: #fff; }
+.admin-order-stat > span { color: #86909c; font-size: 12.5px; }
+.admin-order-stat > b { color: #1f2329; font-size: 19px; font-weight: 600; }
+.admin-order-stat > b em { margin-left: 4px; color: #86909c; font-size: 12px; font-style: normal; font-weight: 400; }
+.admin-order-stat.is-paid { border-color: #ffccc7; background: #fff8f7; }
+.admin-order-stat.is-paid > b { color: #f53f3f; }
+.admin-order-stat.is-paid > b em { color: #ff9a2e; }
+.admin-cell-sub { display: block; margin-top: 2px; color: #86909c; font-size: 11px; }
+#orderTable .th-order-money { width: 120px; }
+/* 订单表首列文字与上方搜索框/统计卡左边缘对齐（241px） */
+#orderTable th:first-child, #orderTable td:first-child { padding-left: 16px; }
 .admin-svc-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .admin-svc-tag {
   display: inline-block; flex: 0 0 auto; max-width: 100%; padding: 1px 6px;
@@ -912,6 +1006,93 @@ button { font: inherit; cursor: pointer; }
 .admin-od-total span { color: #86909c; }
 .admin-od-total b { color: #1f2329; font-size: 16px; font-weight: 600; }
 .admin-od-total del { color: #a9aeb8; font-size: 12.5px; }
+
+/* ===== 发票：列表状态 / 开具 / 合并 / 查看 ===== */
+#orderTable .th-invoice { width: 128px; }
+.admin-invoice-cell { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.admin-invoice-icon {
+  width: 22px; height: 22px; display: inline-grid; place-items: center; padding: 0;
+  border: 0; border-radius: 4px; background: transparent; color: #1677ff; cursor: pointer;
+}
+.admin-invoice-icon:hover { background: #f2f8ff; }
+.admin-invoice-icon svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+.admin-dialog-invoice {
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(90vh, 820px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.admin-dialog-invoice > .admin-dialog-head,
+.admin-dialog-invoice > .admin-dialog-foot { flex: 0 0 auto; }
+.admin-dialog-invoice > .admin-invoice-body { flex: 1 1 auto; min-height: 0; }
+.admin-invoice-body { overflow-y: auto; padding: 2px; }
+.admin-invoice-layout { display: grid; gap: 14px; }
+.admin-invoice-issued-time { color: #86909c; font-size: 12.5px; }
+.admin-invoice-panel { display: grid; gap: 8px; }
+.admin-invoice-section-title { margin: 0; color: #1f2329; font-size: 14px; font-weight: 600; }
+.admin-invoice-info-grid { display: grid; gap: 6px; }
+.admin-invoice-info-row { display: flex; align-items: baseline; gap: 10px; font-size: 13px; line-height: 1.5; }
+.admin-invoice-info-row > span { flex: 0 0 106px; color: #86909c; white-space: nowrap; }
+.admin-invoice-info-row > b { min-width: 0; color: #1f2329; font-weight: 500; overflow-wrap: anywhere; }
+.admin-invoice-extra summary { display: inline-flex; align-items: center; gap: 8px; min-height: 26px; color: #86909c; font-size: 12.5px; cursor: pointer; list-style: none; user-select: none; }
+.admin-invoice-extra summary::-webkit-details-marker { display: none; }
+.admin-invoice-extra summary > span { color: #4e5969; font-weight: 500; }
+.admin-invoice-extra summary > em { color: #a9aeb8; font-style: normal; }
+.admin-invoice-extra summary > i { display: inline-flex; width: 14px; height: 14px; color: #a9aeb8; }
+.admin-invoice-extra summary > i svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.admin-invoice-extra[open] summary > i { transform: rotate(180deg); }
+.admin-invoice-extra-grid { display: grid; gap: 8px; margin-top: 8px; }
+.admin-invoice-amount-row { display: flex; align-items: baseline; gap: 10px; margin-top: 2px; }
+.admin-invoice-amount-row > span { flex: 0 0 106px; color: #1f2329; font-size: 13px; }
+.admin-invoice-amount-row > b { color: #f53f3f; font-size: 24px; font-weight: 700; line-height: 1; }
+.admin-invoice-amount-row > em { color: #86909c; font-size: 12px; font-style: normal; }
+.admin-invoice-order-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.admin-invoice-merge-btn { padding: 0; border: 0; background: transparent; color: #1677ff; font-size: 12.5px; cursor: pointer; white-space: nowrap; }
+.admin-invoice-merge-btn:hover { text-decoration: underline; }
+.admin-invoice-merge-btn span { margin-left: 4px; color: #a9aeb8; font-size: 11.5px; }
+.admin-invoice-table-wrap { overflow-x: auto; }
+.admin-invoice-order-table, .admin-invoice-table { border: 1px solid #f0f1f3; border-radius: 6px; overflow: hidden; }
+.admin-invoice-order-table th, .admin-invoice-order-table td,
+.admin-invoice-table th, .admin-invoice-table td { padding: 9px 12px; }
+.admin-invoice-order-table th, .admin-invoice-table th { background: #f7f8fa; color: #86909c; font-size: 12px; font-weight: 400; }
+.admin-invoice-order-table td, .admin-invoice-table td { font-size: 12.5px; }
+.admin-invoice-order-table .is-mono, .admin-invoice-table .is-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 11.5px; }
+.admin-invoice-order-table .is-amount, .admin-invoice-table .is-amount { color: #f53f3f; white-space: nowrap; }
+.admin-invoice-order-table tr.is-total td { background: #f7f8fa; font-weight: 600; }
+.admin-invoice-order-table tr.is-total td:first-child { text-align: right; }
+.admin-invoice-requirement { margin: 0; color: #a9aeb8; font-size: 12.5px; }
+.admin-invoice-upload-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.admin-invoice-upload-box {
+  display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 96px;
+  padding: 16px 20px; border: 1px dashed #c9cdd4; border-radius: 6px; background: #f7f8fa;
+  cursor: pointer; color: #86909c; text-align: left;
+}
+.admin-invoice-upload-box:hover, .admin-invoice-upload-box.is-dragover { border-color: #1677ff; background: #f2f8ff; }
+.admin-invoice-upload-box[hidden] { display: none; }
+.admin-invoice-upload-plus { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: 0 0 auto; border-radius: 6px; background: #1f2329; color: #fff; }
+.admin-invoice-upload-plus svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.admin-invoice-upload-text { color: #4e5969; font-size: 13px; }
+.admin-invoice-upload-box em { color: #a9aeb8; font-size: 11.5px; font-style: normal; }
+.admin-invoice-file-list, .admin-invoice-attachment-list { display: grid; gap: 8px; }
+.admin-invoice-file-row, .admin-invoice-attachment-row {
+  display: flex; align-items: center; gap: 8px; min-height: 34px; padding: 0 8px;
+  border: 1px solid #e5e6eb; border-radius: 4px; background: #fff; font-size: 12.5px; color: #1f2329;
+}
+.admin-invoice-file-icon { display: inline-flex; width: 16px; height: 16px; flex: 0 0 auto; color: #a9aeb8; }
+.admin-invoice-file-icon svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.admin-invoice-file-name, .admin-invoice-attachment-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-invoice-attachment-name { font-weight: 500; }
+.admin-invoice-file-remove, .admin-invoice-file-action {
+  display: inline-grid; place-items: center; width: 24px; height: 24px; flex: 0 0 auto;
+  padding: 0; border: 0; border-radius: 4px; background: transparent; color: #a9aeb8; cursor: pointer;
+}
+.admin-invoice-file-remove:hover { color: #f53f3f; background: #fff2f0; }
+.admin-invoice-file-action:hover { color: #1677ff; background: #f2f8ff; }
+.admin-invoice-file-remove svg, .admin-invoice-file-action svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.admin-invoice-attachment-actions { display: flex; align-items: center; gap: 4px; margin-left: auto; flex: 0 0 auto; }
+.admin-invoice-tip { margin: 0 0 12px; color: #86909c; font-size: 12.5px; line-height: 1.6; }
 
 /* 窄屏：抽屉铺满宽度，列表按需精简列避免挤压 */
 @media (max-width: 860px) {
@@ -995,7 +1176,7 @@ button { font: inherit; cursor: pointer; }
 .admin-service-table tbody tr:hover { background: #fafbfc; }
 .admin-service-table .th-order { width: 7%; }
 .admin-service-table .th-price { width: 15%; }
-/* 已开通服务价格列：成交价与现价同行展示，不换行 */
+/* 已开通服务价格列：成交价与原价同行展示，不换行 */
 .admin-service-table td.admin-deal-cell { white-space: nowrap; }
 .admin-service-table .th-term { width: 20%; }
 .admin-service-table .th-status { width: 10%; }
@@ -1007,6 +1188,8 @@ button { font: inherit; cursor: pointer; }
 .admin-time-sort { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; cursor: pointer; }
 .admin-time-sort svg { width: 13px; height: 13px; flex: 0 0 13px; fill: none; stroke: #1677ff; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 .admin-time-sort.is-ascending svg { transform: rotate(180deg); }
+.admin-time-sort.is-descending svg { transform: none; }
+.admin-time-sort.is-default svg { stroke: #c9cdd4; }
 .admin-time-sort.is-graph svg { stroke: #c9cdd4; }
 .admin-time-sort:hover { color: #1677ff; }
 .admin-service-action { padding: 2px 0; border: 0; background: transparent; box-shadow: none; color: #1677ff; font: inherit; cursor: pointer; }
@@ -1104,8 +1287,26 @@ button { font: inherit; cursor: pointer; }
 .admin-batch-table tr:last-child td { border-bottom: 0; }
 .admin-batch-table .th-price { width: 110px; }
 .admin-batch-table .th-term-s { width: 76px; }
-.admin-batch-table .th-subtotal { width: 100px; }
+.admin-batch-table .th-subtotal { width: 124px; }
 .admin-batch-subtotal { color: #1f2329; font-weight: 500; }
+.admin-batch-price { display: inline-flex; align-items: center; gap: 2px; }
+.admin-batch-price > span { color: #86909c; font-size: 12px; }
+.admin-batch-price input {
+  width: 68px; height: 28px; padding: 0 6px; border: 1px solid #dcdfe6; border-radius: 4px;
+  background: #fff; color: #1f2329; font: inherit; font-size: 12.5px; text-align: right;
+}
+.admin-batch-price input:focus { border-color: #1677ff; outline: none; }
+.admin-batch-hint { display: block; margin-top: 2px; color: #a9aeb8; font-size: 11px; font-style: normal; }
+.admin-user-add-price {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  margin-top: 12px; padding: 10px 12px; border: 1px solid #e5e6eb; border-radius: 6px;
+  background: #fcfcfd;
+}
+.admin-user-add-price[hidden] { display: none; }
+.admin-user-add-price-label { color: #4e5969; font-size: 13px; font-weight: 500; }
+.admin-user-add-price-label em { margin-left: 2px; color: #f53f3f; font-style: normal; }
+.admin-user-add-price .admin-price-input input { width: 150px; height: 30px; font-size: 13px; }
+.admin-user-add-price small { flex: 1 1 100%; color: #86909c; font-size: 12px; }
 .admin-dialog-warn {
   margin: 14px 0 0; padding: 9px 12px; border-radius: 4px;
   background: #fff7e8; color: #d46b08; font-size: 12.5px; line-height: 1.6;
@@ -1130,7 +1331,7 @@ button { font: inherit; cursor: pointer; }
   .admin-service-table th, .admin-service-table td { padding: 9px 4px; font-size: 12px; }
   .admin-service-table th { font-size: 11.5px; }
   .admin-service-table td.td-sub, .admin-service-table td.admin-service-term { font-size: 11.5px; }
-  /* 窄屏放不下「成交价 + 现价」同行，改为两行展示，避免溢出压到相邻列 */
+  /* 窄屏放不下「成交价 + 原价」同行，改为两行展示，避免溢出压到相邻列 */
   .admin-service-table td.admin-deal-cell { white-space: normal; }
   .admin-service-table .admin-deal-now { display: block; margin-left: 0; }
   /* 服务期「1 年（到期日）」在窄屏折成两行，避免压到开通时间列 */

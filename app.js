@@ -681,7 +681,8 @@ const viewMeta = {
   graph: ['INDUSTRY GRAPH', '产业图谱', '从产业节点到代表企业，查看半导体与集成电路的多级产业链关系。'],
   ai: ['AI RESEARCH AGENT', 'AI智能', '用自然语言查询企业、节点、证据和区域机会，回答会基于当前产业上下文生成。'],
   solution: ['INDUSTRY CHAIN SOLUTIONS', '解决方案', '一站式产业链数字化解决方案：数据底座、能力体系与多元业务场景应用。'],
-  'company-detail': ['COMPANY PROFILE', '企业详情', '查看企业在链上的位置、工商信息、知识产权、法律诉讼与经营表现。']
+  'company-detail': ['COMPANY PROFILE', '企业详情', '查看企业在链上的位置、工商信息、知识产权、法律诉讼与经营表现。'],
+  'user-center': ['USER CENTER', '个人中心', '查看已开通的产业链服务订单、发票状态与平台通知，维护账号安全信息。']
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -692,6 +693,9 @@ const setText = (selector, value) => {
   if (el) el.textContent = value;
 };
 let currentIndustry = '半导体与集成电路';
+// 从个人中心服务跳转时，用服务原名作为详情标题（如「氢能产业」），
+// 内部数据仍按规范名「氢能」匹配；从图谱内部再次选择产业链时清空
+let currentChainDisplayName = '';
 let chainSelectionActive = false;
 let currentNode = null;
 let currentNodePath = '';
@@ -703,7 +707,7 @@ let toastTimer;
  * 限免产业链：集成电路（半导体与集成电路）对所有用户完整开放
  * 游客：仅限免产业链，且不可查看企业详情、不可导出企业清单
  * 注册用户：拥有游客全部权限 + 所有产业链详情页查看权限（仅折叠预览态，深层信息一律弹开通服务）
- * 收费用户：按条开通产业链（¥199/条），已开通的链可完整查看；企业清单导出、AI 智能为收费用户专属
+ * 收费用户：按链开通产业链（开通方式与价格由运营后台配置，默认仅联系客服），已开通的链可完整查看；企业清单导出、AI 智能为收费用户专属
  */
 const USER_ACCESS_RULES = {
   visitor: { label: '游客', chain: '半导体与集成电路', chainLabel: '集成电路产业链' },
@@ -711,14 +715,28 @@ const USER_ACCESS_RULES = {
   paid: { label: '收费用户', chain: null, chainLabel: '已开通的产业链' }
 };
 
-const CHAIN_PRICE = 199;
-
 // 限免产业链（精确归一化名）：集成电路对所有人完整开放
 const FREE_CHAIN_NAMES = ['集成电路', '半导体与集成电路'];
 
 function getUserPurchasedChains() {
   const user = window.WuduAuth && typeof window.WuduAuth.getUser === 'function' ? window.WuduAuth.getUser() : null;
   return Array.isArray(user?.chains) ? user.chains : [];
+}
+
+// 个人中心「服务中」的项目代表该产业链已开通。
+// 从服务列表进入图谱时把链名登记进来，权限判定与已购清单同等看待，
+// 避免用户点自己已开通的服务还被要求「开通服务」。刷新后由个人中心重新登记。
+const grantedServiceChains = new Set();
+
+window.WuduGrantServiceChain = function (name) {
+  if (!name) return;
+  const normalized = normalizeIndustryName(name);
+  if (normalized) grantedServiceChains.add(normalized);
+};
+
+function isServiceChainGranted(name) {
+  const normalized = normalizeIndustryName(name);
+  return Boolean(normalized) && grantedServiceChains.has(normalized);
 }
 
 function getUserType() {
@@ -739,7 +757,8 @@ function chainAllowed(name) {
   if (type === 'registered') return true;
   if (type === 'paid') {
     // 收费用户按条开通：仅可查看已开通的产业链
-    return getUserPurchasedChains().some((chain) => normalizeIndustryName(chain) === normalized);
+    // 「我的服务」里处于服务中的项目也算已开通
+    return isServiceChainGranted(name) || getUserPurchasedChains().some((chain) => normalizeIndustryName(chain) === normalized);
   }
   return false;
 }
@@ -750,7 +769,7 @@ function hasFullChainAccess(name) {
   if (FREE_CHAIN_NAMES.includes(normalized)) return true;
   const type = getUserType();
   if (type !== 'paid') return false;
-  return getUserPurchasedChains().some((chain) => normalizeIndustryName(chain) === normalized);
+  return isServiceChainGranted(name) || getUserPurchasedChains().some((chain) => normalizeIndustryName(chain) === normalized);
 }
 
 // 详情页折叠预览态：已进入详情页（登录用户）但无完整查看权限
@@ -759,29 +778,32 @@ function isChainPreviewMode() {
 }
 
 // 深层信息拦截：预览态下一律弹开通服务窗（chainName 用于进入详情时 currentIndustry 尚未更新的场景）
-function promptChainUpgrade(actionLabel = '查看细分环节、企业清单与产业分析等完整内容', chainName) {
-  const name = chainName || currentIndustry || '该产业链';
+function promptChainUpgrade(actionLabel = '查看细分环节、企业清单与产业分析等完整内容', chainName, displayName) {
+  // displayName 用于弹窗展示，优先于内部目录名（如个人中心服务名「氢能产业」，图谱目录名为「氢能」）
+  const name = displayName || chainName || currentIndustry || '该产业链';
   // 弹窗已打开时不重复弹出/刷新（如进入详情自动提示后又立刻触发其他深层操作）
   if (document.getElementById('upgradeDialogLayer')?.classList.contains('is-open')) return;
-  window.WuduAuth?.openUpgrade(`当前可折叠预览「${name}」产业链图谱，${actionLabel}需单独开通（¥${CHAIN_PRICE}/条），开通后即可查看该产业链全部内容。`, name);
+  window.WuduAuth?.openUpgrade(`当前可折叠预览「${name}」产业链图谱，${actionLabel}需开通该产业链后查看。`, chainName || currentIndustry || name);
 }
 
-// 点击未授权的产业链：游客弹登录窗，注册/收费用户弹开通服务窗（按条开通）
-function gateChainEntry(name) {
+// 点击未授权的产业链：游客弹登录窗，注册/收费用户弹开通服务窗（按链开通）
+// displayName 用于弹窗展示，让个人中心的服务名与提示文案保持一致
+function gateChainEntry(name, displayName) {
   if (chainAllowed(name)) return true;
   const type = getUserType();
+  const visibleName = displayName || name;
   if (type === 'visitor') {
     window.WuduAuth?.openLogin();
   } else {
-    window.WuduAuth?.openUpgrade(`查看「${name}」需单独开通（¥${CHAIN_PRICE}/条），开通后即可查看该产业链图谱与上链企业。`, name);
+    window.WuduAuth?.openUpgrade(`查看「${visibleName}」需先开通该产业链，开通后可查看图谱与上链企业。`, name);
   }
   return false;
 }
 
 // 进入产业链详情：游客/未购用户被 gate 拦截；登录用户进入未购链时自动弹一次开通服务窗（可关闭/取消）
-function enterChainDetail(name) {
-  if (!gateChainEntry(name)) return false;
-  if (!hasFullChainAccess(name)) promptChainUpgrade(undefined, name);
+function enterChainDetail(name, displayName) {
+  if (!gateChainEntry(name, displayName)) return false;
+  if (!hasFullChainAccess(name)) promptChainUpgrade(undefined, name, displayName);
   return true;
 }
 
@@ -1403,7 +1425,7 @@ function companyMatchesAdvancedFilters(company) {
 }
 
 function renderSelectedChain(profile) {
-  const title = currentIndustry || '当前产业链';
+  const title = currentChainDisplayName || currentIndustry || '当前产业链';
   $('#selectedChainTitle').textContent = title;
   $('#selectedChainContext').textContent = profile
     ? profile.intro || profile.tip || getFilterContext()
@@ -1445,6 +1467,7 @@ function setChainSelectionMode(selected) {
 function showChainPicker() {
   setChainSelectionMode(false);
   currentIndustry = '';
+  currentChainDisplayName = '';
   renderGraph();
   $('#chainFilterList')?.focus?.();
 }
@@ -1822,6 +1845,7 @@ function jumpToChainNode(chainName, nodeName, subpath) {
   if (!enterChainDetail(chainName)) return;
   searchDrilldown = null;
   currentIndustry = chainName;
+  currentChainDisplayName = '';
   chainSelectionActive = true;
   setChainSelectionMode(true);
   setView('graph');
@@ -1968,6 +1992,7 @@ function bindSearchChainBlock(container) {
       if (!enterChainDetail(button.dataset.industry)) return;
       searchDrilldown = null;
       currentIndustry = button.dataset.industry;
+      currentChainDisplayName = '';
       setChainSelectionMode(true);
       renderGraph();
       setWorkbenchSection('graphSection');
@@ -2015,6 +2040,7 @@ function renderChainPicker(profile) {
     $$('.chain-picker-item', groupsContainer).forEach((button) => button.addEventListener('click', () => {
       if (!enterChainDetail(button.dataset.industry)) return;
       currentIndustry = button.dataset.industry;
+      currentChainDisplayName = '';
       setChainSelectionMode(true);
       renderGraph();
       setWorkbenchSection('graphSection');
@@ -3571,6 +3597,52 @@ function setView(view) {
   if (view !== 'company-detail') window.CompanyDetail?.close();
 }
 
+// 个人中心等外部模块需要复用视图切换（内嵌页面，非浮层）
+window.WuduSetView = setView;
+
+// 个人中心「我的服务」的服务名即产业链名，但与图谱目录存在少量别名差异，
+// 这里统一映射后再进入详情，避免出现点进去是空图谱的情况
+const SERVICE_CHAIN_ALIASES = {
+  '氢能产业': '氢能',
+  '半导体材料': '半导体与集成电路',
+  '储能产业': '储能',
+  '商业航天': '航空航天'
+};
+
+function resolveServiceChainName(name) {
+  const key = String(name || '').trim();
+  if (SERVICE_CHAIN_ALIASES[key]) return SERVICE_CHAIN_ALIASES[key];
+  const allNames = new Set([
+    ...nationalIndustryEntries.map((entry) => entry.name),
+    ...regionCatalog.flatMap((region) => region.industryEntries.map((entry) => entry.name))
+  ]);
+  if (allNames.has(key)) return key;
+  return [...allNames].find((catalogName) => industryNameMatches(catalogName, key)) || key;
+}
+
+// 从个人中心服务跳转到对应产业链图谱详情（沿用首页产业链入口的完整流程）
+// options.activeService 表示点击的是「服务中」项目：该链已开通，登记授权后不再弹开通窗
+// 弹窗文案始终用服务原始名称（name），与列表里的服务名保持一致
+window.WuduOpenChainDetail = function (name, options) {
+  const opts = options || {};
+  const chainName = resolveServiceChainName(name);
+  if (opts.activeService) {
+    window.WuduGrantServiceChain(name);
+    window.WuduGrantServiceChain(chainName);
+  }
+  if (!enterChainDetail(chainName, name)) return false;
+  searchDrilldown = null;
+  currentIndustry = chainName;
+  // 标题用服务原名，保证列表与详情名称一致；内部数据仍按 chainName 匹配
+  currentChainDisplayName = name || '';
+  chainSelectionActive = true;
+  setChainSelectionMode(true);
+  setView('graph');
+  renderGraph();
+  setWorkbenchSection('graphSection');
+  return true;
+};
+
 /* ===================== 首页 ===================== */
 // 首页产业标签统计：优先真实图谱明细，其次按链名确定性生成模拟统计
 function getChainStats(name) {
@@ -3598,6 +3670,7 @@ function renderHomeChainChips() {
   $$('.home-industry-item').forEach((chip) => chip.addEventListener('click', () => {
     if (!enterChainDetail(chip.dataset.industry)) return;
     currentIndustry = chip.dataset.industry;
+    currentChainDisplayName = '';
     chainSelectionActive = true;
     setChainSelectionMode(true);
     setView('graph');
@@ -3614,6 +3687,7 @@ function renderHomeChainChips() {
       chainSelectionActive = false;
       setChainSelectionMode(false);
       currentIndustry = '';
+      currentChainDisplayName = '';
       $('#graphSearch').value = '';
       syncGraphSearchClear();
       chainFilterState.value = chip.dataset.category;
@@ -4171,6 +4245,7 @@ function init() {
     }
     chainSelectionActive = false;
     setChainSelectionMode(false);
+    currentChainDisplayName = '';
     renderGraph();
     if ($('.view-panel.active')?.dataset.panel === 'graph') setWorkbenchSection('graphSection');
   });

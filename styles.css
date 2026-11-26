@@ -1708,6 +1708,10 @@ html, body { overflow-x: hidden; }
 .main-content {
   overflow-x: hidden;
   overflow-y: auto;
+  /* 滚动条槽位常驻：不同视图内容高度不同，滚动条会反复出现 / 消失，
+     导致内容可用宽度在 100% 与 calc(100% - 10px) 之间跳变，整块内容左右横移。
+     固定槽位后，无论是否出现滚动条，内容横向起点都不再移动 */
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: #c3d1da #f2f5f7;
 }
@@ -1715,6 +1719,10 @@ html, body { overflow-x: hidden; }
 .main-content::-webkit-scrollbar-track { background: #f2f5f7; }
 .main-content::-webkit-scrollbar-thumb { border: 2px solid #f2f5f7; border-radius: 8px; background: #c3d1da; }
 .main-content::-webkit-scrollbar-thumb:hover { background: #aabecb; }
+/* 旧版 Safari 不认 scrollbar-gutter，退回常驻滚动条，效果等同（槽位始终占位） */
+@supports not (scrollbar-gutter: stable) {
+  .main-content { overflow-y: scroll; }
+}
 .page-wrap { overflow: visible; }
 #graphView.active { overflow: visible; padding-right: 0; }
 

@@ -1,0 +1,1995 @@
+/* 个人中心：内嵌页面（与首页 / 解决方案同构） — 我的订单 / 通知中心 / 安全中心 / 线上申请发票 */
+
+/* ---------- 页面容器 ---------- */
+/* 顶部间距、左右内距、最大宽度全部由 .page-wrap 统一控制（见 styles.css）：
+   个人中心与首页 / 产业图谱 / 解决方案属于同一层级的页面，只是呈现内容不同，
+   因此这里只做视口占位，不再单独设置 padding / max-width，避免同级页面左右边界不一致 */
+.view-panel.user-center-view.active {
+  display: block;
+  overflow: visible;
+  padding-top: 0;
+}
+
+/* 窄屏内容本身已占满，右侧悬浮咨询栏会压住表格；个人中心页脚已提供客服联系方式，窄屏下不再悬浮 */
+@media (max-width: 899px) {
+  body:has(.user-center-view.active) .side-widget {
+    display: none !important;
+  }
+}
+
+.uc-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  /* 顶部间距交给 .page-wrap 统一控制（与首页/产业图谱/解决方案一致），此处不再额外下压 */
+  padding: 0 0 34px;
+  color: #21383e;
+}
+
+/* ---------- 主体两栏 ---------- */
+.uc-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.uc-side {
+  width: 224px;
+  flex: 0 0 224px;
+  position: sticky;
+  top: 12px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 16px 14px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.uc-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 12px;
+  border: 1px solid #e7eef5;
+  border-radius: 8px;
+  background: #f7fafc;
+}
+
+.uc-avatar {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #dcefff;
+  color: #1d6fae;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.uc-profile-card > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.uc-profile-card strong {
+  overflow: hidden;
+  color: #1d3a52;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uc-profile-card small {
+  color: #8494a5;
+  font-size: 11.5px;
+}
+
+.uc-nav {
+  display: grid;
+  gap: 3px;
+  margin-top: 16px;
+}
+
+.uc-nav-item {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #52697e;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.uc-nav-item .ui-icon {
+  flex: 0 0 auto;
+  color: #8ba0b2;
+}
+
+.uc-nav-item:hover {
+  background: #f4f8fc;
+}
+
+.uc-nav-item.is-active {
+  background: #eef5ff;
+  box-shadow: inset 3px 0 #2478e5;
+  color: #1769d0;
+  font-weight: 600;
+}
+
+.uc-nav-item.is-active .ui-icon {
+  color: #2478e5;
+}
+
+.uc-badge {
+  min-width: 18px;
+  height: 18px;
+  display: inline-grid;
+  place-items: center;
+  margin-left: auto;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #df7667;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.uc-badge[hidden] {
+  display: none;
+}
+
+/* 安全中心：一级入口 + 两个二级入口 */
+.uc-nav-group {
+  margin-top: 4px;
+}
+
+.uc-nav-item.uc-nav-section {
+  min-height: 40px;
+  font-size: 13.5px;
+  color: #52697e;
+}
+
+.uc-nav-item.uc-nav-section .uc-nav-caret {
+  margin-left: auto;
+  color: #a3b1be;
+  transition: transform .18s ease;
+}
+
+.uc-nav-item.uc-nav-section.is-collapsed .uc-nav-caret {
+  transform: rotate(-90deg);
+}
+
+.uc-nav-sub-list {
+  display: grid;
+  gap: 2px;
+}
+
+.uc-nav-sub-list[hidden] {
+  display: none;
+}
+
+.uc-nav-item.uc-nav-sub {
+  min-height: 36px;
+  padding-left: 34px;
+  font-size: 13px;
+  color: #60768a;
+}
+
+.uc-main {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.uc-panel {
+  min-width: 0;
+}
+
+.uc-panel-head {
+  margin-bottom: 16px;
+}
+
+.uc-panel-head h2 {
+  color: #142e46;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.uc-panel-head p {
+  margin-top: 6px;
+  color: #8494a5;
+  font-size: 12px;
+}
+
+.uc-panel-head-actions {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* ---------- 统计卡 ---------- */
+.uc-stat-row {
+  display: grid;
+  /* 我的服务只分「服务中 / 已过期」两块；订单页仍是三块，用 auto-fit 兼容两种数量 */
+  grid-template-columns: repeat(auto-fit, minmax(180px, 260px));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.uc-stat {
+  box-sizing: border-box;
+  padding: 15px 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.uc-stat span {
+  display: block;
+  color: #8494a5;
+  font-size: 12px;
+}
+
+.uc-stat strong {
+  display: block;
+  margin-top: 9px;
+  color: #173d5d;
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.uc-stat small {
+  display: block;
+  margin-top: 5px;
+  color: #a3b1be;
+  font-size: 11px;
+}
+
+/* ---------- 卡片 / 标签页 / 表格 ---------- */
+.uc-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.uc-tabs {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.uc-tabs button {
+  height: 44px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #71869a;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.uc-tabs button:hover {
+  color: #2478e5;
+}
+
+.uc-tabs button.is-active {
+  border-bottom-color: #2478e5;
+  color: #2478e5;
+  font-weight: 600;
+}
+
+/* 页签内的数量小徽标：一眼看出两类各有多少条 */
+.uc-tab-count {
+  display: inline-block;
+  min-width: 18px;
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #eef3f8;
+  color: #7d8fa1;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 17px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.uc-tabs button.is-active .uc-tab-count {
+  background: #e8f1fd;
+  color: #2478e5;
+}
+
+.uc-tabs .uc-tabs-extra {
+  margin-left: auto;
+  color: #a3b1be;
+  font-size: 11.5px;
+}
+
+/* 通知中心：页签行右侧的「全部标为已读」紧跟条数，保持单行操作区 */
+.uc-tabs .uc-read-button {
+  margin-left: 12px;
+  flex: 0 0 auto;
+}
+
+.uc-table-wrap {
+  overflow-x: auto;
+}
+
+/* 窄屏时表格保持最小可读宽度，改为横向滚动而不是把单元格压成竖排文字 */
+.uc-table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+
+.uc-table th {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: #fafbfd;
+  color: #7c8ea1;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.uc-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #eef2f6;
+  color: #425c70;
+  vertical-align: middle;
+}
+
+.uc-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.uc-table tbody tr:hover {
+  background: #fbfdff;
+}
+
+.uc-cell-main {
+  color: #1d3a52;
+  font-weight: 600;
+}
+
+/* 服务内容列不折行，避免窄屏下被压成逐字换行 */
+.uc-col-service .uc-cell-main,
+.uc-col-service .uc-cell-sub {
+  white-space: nowrap;
+}
+
+.uc-col-actions {
+  white-space: nowrap;
+}
+
+.uc-cell-sub {
+  margin-top: 3px;
+  color: #9aa9b8;
+  font-size: 11.5px;
+}
+
+.uc-amount {
+  color: #b34d47;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.uc-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 10px;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+.uc-tag.is-paid {
+  background: #e8f6f1;
+  color: #12826f;
+}
+
+.uc-tag.is-pending {
+  background: #fff4df;
+  color: #b8791f;
+}
+
+.uc-tag.is-info {
+  background: #eaf2ff;
+  color: #2478e5;
+}
+
+.uc-tag.is-muted {
+  background: #f1f4f7;
+  color: #7d8d9c;
+}
+
+.uc-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #2478e5;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.uc-link:hover {
+  text-decoration: underline;
+}
+
+.uc-link-strong {
+  font-weight: 600;
+}
+
+.uc-link + .uc-link {
+  margin-left: 12px;
+}
+
+/* 操作列按钮：描边小按钮 + 主色按钮，比纯文字链接更明确 */
+.uc-act {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: #fff;
+  color: #4a6680;
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: border-color .16s ease, color .16s ease, background .16s ease;
+}
+
+.uc-act:hover {
+  border-color: #9fc3ea;
+  background: #f5faff;
+  color: #2478e5;
+}
+
+.uc-act.is-primary {
+  border-color: #2478e5;
+  background: #2478e5;
+  color: #fff;
+}
+
+.uc-act.is-primary:hover {
+  border-color: #1769d0;
+  background: #1769d0;
+  color: #fff;
+}
+
+.uc-act + .uc-act {
+  margin-left: 6px;
+}
+
+/* 勾选列（合并开票）：表头 th 受 .uc-table th 的 text-align:left 影响，需提高选择器权重才能与表体一样居中 */
+.uc-table th.uc-col-check,
+.uc-table td.uc-col-check {
+  width: 42px;
+  padding-right: 0 !important;
+  text-align: center;
+}
+
+.uc-check {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: #2478e5;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.uc-check:disabled {
+  cursor: not-allowed;
+}
+
+.uc-check-disabled {
+  color: #c6d0da;
+  font-size: 12px;
+}
+
+.uc-table tbody tr.is-selected {
+  background: #f4f9ff;
+}
+
+.uc-table tbody tr.is-selected:hover {
+  background: #eef6ff;
+}
+
+/* 批量操作条：始终占位，勾选后变为可用状态 */
+.uc-batch {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  border-bottom: 1px solid #eef2f6;
+  background: #fafbfd;
+  color: #7c8ea1;
+  font-size: 12.5px;
+}
+
+.uc-batch-count b {
+  color: #2478e5;
+  font-size: 13.5px;
+}
+
+.uc-batch-amount {
+  margin-right: auto;
+}
+
+.uc-batch-amount b {
+  color: #b34d47;
+  font-variant-numeric: tabular-nums;
+}
+
+.uc-btn.sm {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+
+.uc-btn.ghost:disabled {
+  border-color: #e5eaef;
+  background: #f7f9fb;
+  color: #b9c5d0;
+  cursor: not-allowed;
+}
+
+.uc-empty {
+  padding: 56px 20px;
+  color: #98a8b8;
+  font-size: 13px;
+  text-align: center;
+}
+
+.uc-table-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 11px 18px;
+  border-top: 1px solid #eef2f6;
+  background: #fafbfd;
+  color: #8494a5;
+  font-size: 11.5px;
+  line-height: 1.7;
+}
+
+.uc-table-note .ui-icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #9ab4cb;
+}
+
+/* ---------- 通知中心 ---------- */
+.uc-notice-list {
+  display: grid;
+}
+
+.uc-notice-item {
+  padding: 16px 18px;
+  border-bottom: 1px solid #eef2f6;
+}
+
+/* 右下角悬浮咨询栏（.side-widget）在 900–1500px 区间会压住卡片右侧内边距，
+   通知右列是纯文字，被压住会读不清；该区间让条目右侧多留 28px 让位，
+   超过 1500px 后恢复与左侧一致的 18px 内距 */
+@media (min-width: 900px) and (max-width: 1500px) {
+  .uc-notice-item {
+    padding-right: 46px;
+  }
+}
+
+.uc-notice-item:last-child {
+  border-bottom: 0;
+}
+
+.uc-notice-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.uc-notice-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eaf2ff;
+  color: #2478e5;
+}
+
+.uc-notice-icon.is-service {
+  background: #e5f7f3;
+  color: #12826f;
+}
+
+.uc-notice-icon.is-security {
+  background: #fff4df;
+  color: #b8791f;
+}
+
+.uc-notice-content {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.uc-notice-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1d3a52;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.uc-notice-item.is-read .uc-notice-title {
+  color: #6b8092;
+  font-weight: 400;
+}
+
+.uc-notice-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #df7667;
+}
+
+.uc-notice-summary {
+  margin-top: 5px;
+  color: #7c8ea1;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/* 类型 / 时间 / 操作提示靠右成列。
+   通知正文普遍很短，若全部挤在左侧，条目右侧会整片留白，
+   整块看起来就比「我的服务」「我的订单」的表格窄一截；
+   把次要信息贴到右边缘后，条目左右都有内容，视觉宽度与其它模块一致 */
+.uc-notice-side {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 132px;
+  text-align: right;
+}
+
+.uc-notice-kind {
+  color: #7c8ea1;
+  font-size: 11.5px;
+}
+
+.uc-notice-time {
+  color: #a3b1be;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.uc-notice-toggle {
+  color: #2478e5;
+  font-size: 11.5px;
+}
+
+.uc-notice-detail {
+  margin: 12px 0 0 46px;
+  padding: 12px 14px;
+  border-radius: 6px;
+  background: #f6f9fc;
+  color: #52697e;
+  font-size: 12.5px;
+  line-height: 1.85;
+}
+
+.uc-notice-detail[hidden] {
+  display: none;
+}
+
+.uc-read-button {
+  height: 30px;
+  padding: 0 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: #fff;
+  color: #557087;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.uc-read-button:hover {
+  border-color: #9fc3ea;
+  color: #2478e5;
+}
+
+/* ---------- 账号设置 ---------- */
+.uc-account-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+/* 账号卡右侧信息区：把「绑定手机号 / 注册时间」贴到右边缘，
+   避免整张卡片只有左侧头像和手机号、右侧半张全空，显得比其它模块窄 */
+.uc-account-side {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-left: auto;
+  padding-left: 20px;
+  text-align: right;
+}
+
+.uc-account-side span {
+  color: #8494a5;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.uc-account-side span b {
+  color: #425c70;
+  font-weight: 600;
+}
+
+.uc-account-avatar {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #dcefff;
+  color: #1d6fae;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.uc-account-info {
+  min-width: 0;
+}
+
+.uc-account-info strong {
+  display: block;
+  color: #1d3a52;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.uc-account-info p {
+  margin-top: 6px;
+  color: #8494a5;
+  font-size: 12px;
+}
+
+.uc-account-tags {
+  display: flex;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.uc-setting-list {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.uc-setting-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.uc-setting-row:last-child {
+  border-bottom: 0;
+}
+
+.uc-setting-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: #f1f6fc;
+  color: #5b87b5;
+}
+
+.uc-setting-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.uc-setting-text strong {
+  display: block;
+  color: #1d3a52;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.uc-setting-text p {
+  margin-top: 5px;
+  color: #8a9bab;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.uc-setting-value {
+  flex: 0 0 160px;
+  color: #5b6f80;
+  font-size: 12.5px;
+  text-align: right;
+}
+
+.uc-setting-action {
+  height: 30px;
+  flex: 0 0 auto;
+  padding: 0 15px;
+  border: 1px solid #bcd6f2;
+  border-radius: 5px;
+  background: #fff;
+  color: #2478e5;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.uc-setting-action:hover {
+  background: #f2f8ff;
+}
+
+/* ---------- 服务协议 ---------- */
+.uc-agreement-layout {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.uc-agreement-menu {
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.uc-agreement-menu button {
+  width: 100%;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #52697e;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.uc-agreement-menu button:hover {
+  background: #f4f8fc;
+}
+
+.uc-agreement-menu button.is-active {
+  background: #eef5ff;
+  box-shadow: inset 3px 0 #2478e5;
+  color: #1769d0;
+  font-weight: 600;
+}
+
+.uc-agreement-doc {
+  padding: 24px 28px 30px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.uc-agreement-doc h3 {
+  color: #142e46;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.uc-agreement-meta {
+  margin: 14px 0 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #eef2f6;
+  color: #98a8b8;
+  font-size: 11.5px;
+  text-align: center;
+}
+
+.uc-agreement-doc h4 {
+  margin: 20px 0 6px;
+  color: #1d3a52;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.uc-agreement-doc p {
+  color: #52697e;
+  font-size: 12.5px;
+  line-height: 1.9;
+}
+
+.uc-agreement-note {
+  margin-top: 22px;
+  padding: 11px 13px;
+  border-radius: 6px;
+  background: #f6f9fc;
+  color: #8494a5;
+  font-size: 11.5px;
+  line-height: 1.7;
+}
+
+/* ---------- 订单详情弹窗 ---------- */
+.uc-detail-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(13, 32, 48, .42);
+}
+
+.uc-detail-layer.is-open {
+  display: flex;
+}
+
+.uc-detail-dialog {
+  width: min(580px, 100%);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(9, 28, 44, .25);
+}
+
+.uc-detail-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.uc-detail-head strong {
+  color: #1d3a52;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.uc-detail-close {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #8494a5;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.uc-detail-close:hover {
+  background: #f2f5f8;
+  color: #425c70;
+}
+
+.uc-detail-body {
+  overflow: auto;
+  padding: 18px 20px 22px;
+}
+
+.uc-detail-grid {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 11px 14px;
+  font-size: 12.5px;
+}
+
+.uc-detail-grid span {
+  color: #8a9bab;
+}
+
+.uc-detail-grid b {
+  color: #2b4356;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.uc-detail-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #eef2f6;
+}
+
+.uc-detail-section h5 {
+  margin: 0 0 10px;
+  color: #1d3a52;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.uc-detail-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 0;
+  border-bottom: 1px dashed #eef2f6;
+  color: #425c70;
+  font-size: 12.5px;
+}
+
+.uc-detail-item:last-child {
+  border-bottom: 0;
+}
+
+/* 订单详情概要：与运营管理后台订单详情一致，左标签右值 */
+.uc-detail-summary {
+  display: grid;
+  gap: 9px;
+  padding: 13px 15px;
+  border-radius: 6px;
+  background: #f7fafc;
+}
+
+.uc-detail-summary > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 12.5px;
+}
+
+.uc-detail-summary > div > span {
+  flex: 0 0 auto;
+  color: #8a9bab;
+}
+
+.uc-detail-summary > div > b {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #2b4356;
+  font-weight: 500;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+/* 服务明细表：与运营管理后台订单详情一致的四列表格 */
+.uc-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e8edf3;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.uc-detail-table th {
+  padding: 8px 11px;
+  background: #f7fafc;
+  color: #8a9bab;
+  font-size: 11.5px;
+  font-weight: 400;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.uc-detail-table th:not(:first-child),
+.uc-detail-table td:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.uc-detail-table td {
+  padding: 9px 11px;
+  border-top: 1px solid #eef2f6;
+  color: #2b4356;
+  font-size: 12.5px;
+}
+
+.uc-detail-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 11px;
+  padding: 11px 14px;
+  border-radius: 6px;
+  background: #f7fafc;
+  font-size: 12.5px;
+}
+
+.uc-detail-total > span {
+  margin-right: auto;
+  color: #8a9bab;
+}
+
+.uc-detail-total del {
+  color: #a3b1be;
+}
+
+.uc-detail-total > em {
+  color: #52697e;
+  font-style: normal;
+}
+
+.uc-detail-total > b {
+  color: #e05142;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.uc-detail-extra-grid {
+  display: grid;
+  gap: 7px;
+  margin-top: 11px;
+  padding: 11px 13px;
+  border-radius: 6px;
+  background: #f7fafc;
+  font-size: 12px;
+}
+
+.uc-detail-extra-grid > div {
+  display: flex;
+  gap: 12px;
+}
+
+.uc-detail-extra-grid span {
+  flex: 0 0 76px;
+  color: #8a9bab;
+}
+
+.uc-detail-extra-grid b {
+  color: #425c70;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.uc-detail-invoice-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 12.5px;
+}
+
+.uc-detail-invoice-amount span {
+  color: #8a9bab;
+}
+
+.uc-detail-invoice-amount b {
+  color: #e05142;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 服务时效进度条（列表 / 详情共用） */
+.uc-col-validity {
+  min-width: 132px;
+}
+
+.uc-validity {
+  display: grid;
+  gap: 5px;
+  min-width: 120px;
+}
+
+.uc-validity-bar {
+  height: 5px;
+  border-radius: 3px;
+  background: #e9eff5;
+  overflow: hidden;
+}
+
+.uc-validity-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: #2fa88a;
+  transition: width .3s ease;
+  /* 刚开通的服务进度仅 1-3%，圆角会把色块压成圆点；最小 10px 读作「起步」的短段 */
+  min-width: 10px;
+}
+
+.uc-validity-bar i.is-warn {
+  background: #e8a33d;
+}
+
+.uc-validity-bar i.is-expired {
+  background: #d0695f;
+}
+
+.uc-validity span {
+  color: #8698a9;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+
+/* 30 天内到期不单列分类，只在时效列加一行橙色小字提示 */
+.uc-validity .uc-validity-hint {
+  color: #d18b28;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.uc-validity-lg {
+  margin-bottom: 12px;
+  min-width: 0;
+}
+
+.uc-validity-lg .uc-validity-bar {
+  height: 7px;
+}
+
+.uc-validity-lg span {
+  color: #5d768b;
+  font-size: 12.5px;
+}
+
+.uc-detail-text {
+  margin: 0;
+  color: #6b8299;
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+
+.uc-service-table {
+  min-width: 880px;
+}
+
+/* 服务名称 + 「已续费 N 次」徽标同排；给足宽度避免徽标把服务名挤成两行 */
+.uc-service-table td:first-child {
+  min-width: 190px;
+}
+
+.uc-service-table td:first-child .uc-cell-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.uc-service-table td:first-child .uc-cell-main .uc-renew-tag {
+  margin-left: 0;
+  flex: 0 0 auto;
+}
+
+/* 服务名称即产业链名称，点击跳转对应图谱详情。
+   平时保持正文色避免整列都是蓝色显得花哨，hover 才提示可点击 */
+.uc-chain-link {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.uc-chain-link:hover {
+  color: #2478e5;
+  text-decoration: underline;
+}
+
+.uc-chain-link:focus-visible {
+  outline: 2px solid #9fc3ea;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* 续费标记：与服务名同排的小徽标 */
+.uc-renew-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #eef5fb;
+  color: #4a83c0;
+  font-size: 11px;
+  font-weight: 400;
+  vertical-align: 1px;
+}
+
+/* 服务详情内的服务期记录（首次开通 + 各次续费） */
+.uc-term-list {
+  display: grid;
+  gap: 1px;
+  border-radius: 6px;
+  background: #eef3f8;
+  overflow: hidden;
+}
+
+.uc-term-row {
+  display: grid;
+  grid-template-columns: 78px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 9px 12px;
+  background: #fff;
+  font-size: 12.5px;
+}
+
+.uc-term-row b {
+  color: #26394b;
+  font-weight: 500;
+}
+
+.uc-term-index {
+  color: #6b8299;
+}
+
+.uc-term-order {
+  color: #93a5b6;
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.uc-detail-foot {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  padding: 13px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.uc-detail-primary {
+  height: 32px;
+  padding: 0 18px;
+  border: 1px solid var(--blue);
+  border-radius: 5px;
+  background: var(--blue);
+  color: #fff;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.uc-detail-primary:hover {
+  background: #1769d0;
+}
+
+/* ---------- 线上申请发票 ---------- */
+.uc-form-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 12100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(13, 32, 48, .46);
+}
+
+.uc-form-layer.is-open {
+  display: flex;
+}
+
+.uc-form-dialog {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 20px 56px rgba(9, 28, 44, .28);
+}
+
+.uc-form-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px 15px;
+  border-bottom: 1px solid var(--line);
+}
+
+.uc-form-head strong {
+  display: block;
+  color: #142e46;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.uc-form-head p {
+  margin-top: 6px;
+  color: #8494a5;
+  font-size: 11.5px;
+}
+
+.uc-form-body {
+  overflow: auto;
+  padding: 18px 22px 20px;
+}
+
+/* 关联订单摘要 */
+.uc-form-order {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e7eef5;
+  border-radius: 8px;
+  background: #f7fafc;
+}
+
+.uc-form-order > div {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.uc-form-order span {
+  color: #8a9bab;
+  font-size: 11.5px;
+}
+
+.uc-form-order b {
+  overflow: hidden;
+  color: #1d3a52;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 多笔订单合并开票：逐行列出，金额右对齐 */
+.uc-form-order.uc-form-order-list {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+}
+
+.uc-form-order-list > .uc-form-order-head,
+.uc-form-order-list > .uc-form-order-row {
+  display: grid;
+  grid-template-columns: 158px minmax(0, 1fr) 92px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+}
+
+.uc-form-order-list > .uc-form-order-head {
+  border-bottom: 1px solid #e7eef5;
+  color: #8a9bab;
+  font-size: 11.5px;
+}
+
+.uc-form-order-head > span:last-child {
+  text-align: right;
+}
+
+.uc-form-order-row + .uc-form-order-row {
+  border-top: 1px dashed #edf2f7;
+}
+
+.uc-form-order-id {
+  color: #1d3a52;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.uc-form-order-service {
+  overflow: hidden;
+  color: #5d768b;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.uc-form-order-row .uc-amount,
+.uc-form-order-total .uc-amount {
+  text-align: right;
+}
+
+.uc-form-order-list > .uc-form-order-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-top: 1px solid #e7eef5;
+  background: #eff5fb;
+  color: #7c8ea1;
+  font-size: 12px;
+}
+
+.uc-form-order-total b {
+  font-size: 13.5px;
+}
+
+.uc-form-section {
+  margin-top: 18px;
+}
+
+.uc-form-section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 11px;
+  color: #1d3a52;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.uc-form-section-title em {
+  color: #df7667;
+  font-style: normal;
+}
+
+.uc-form-section-title small {
+  color: #a3b1be;
+  font-size: 11px;
+  font-weight: 400;
+}
+
+/* 选填信息：默认折叠的告知类入口，不做重点突出（同运营管理后台发票申请信息） */
+.uc-form-extra {
+  margin-top: 16px;
+  padding-top: 6px;
+  border-top: 1px dashed #e7edf3;
+}
+
+.uc-form-extra summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  color: #8698a9;
+  font-size: 12.5px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.uc-form-extra summary::-webkit-details-marker {
+  display: none;
+}
+
+.uc-form-extra summary > span {
+  color: #52697e;
+  font-weight: 500;
+}
+
+.uc-form-extra summary > em {
+  color: #a3b1be;
+  font-style: normal;
+  font-size: 11.5px;
+}
+
+.uc-form-extra summary > i {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: #a3b1be;
+}
+
+.uc-form-extra summary > i svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.uc-form-extra[open] summary > i {
+  transform: rotate(180deg);
+}
+
+.uc-form-extra .uc-form-grid {
+  margin-top: 12px;
+}
+
+/* 普票 / 专票单选 */
+.uc-invoice-type {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.uc-invoice-type label {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color .16s ease, background .16s ease;
+}
+
+.uc-invoice-type label:hover {
+  border-color: #bcd6f2;
+}
+
+.uc-invoice-type label.is-checked {
+  border-color: #2478e5;
+  background: #f5faff;
+}
+
+.uc-invoice-type input {
+  margin-top: 2px;
+  accent-color: #2478e5;
+}
+
+.uc-invoice-type label > span {
+  display: grid;
+  gap: 4px;
+}
+
+.uc-invoice-type b {
+  color: #1d3a52;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.uc-invoice-type small {
+  color: #8a9bab;
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+/* 表单栅格 */
+.uc-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px 14px;
+}
+
+.uc-field {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.uc-field-wide {
+  grid-column: 1 / -1;
+}
+
+.uc-field-label {
+  color: #52697e;
+  font-size: 12px;
+}
+
+.uc-field-label em {
+  margin-left: 3px;
+  color: #df7667;
+  font-style: normal;
+}
+
+.uc-field input,
+.uc-field select,
+.uc-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 11px;
+  height: 36px;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: #fff;
+  color: #21383e;
+  font: inherit;
+  font-size: 12.5px;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+
+.uc-field textarea {
+  height: auto;
+  padding: 9px 11px;
+  line-height: 1.7;
+  resize: vertical;
+}
+
+.uc-field input::placeholder,
+.uc-field textarea::placeholder {
+  color: #b3c0cc;
+}
+
+.uc-field input:focus,
+.uc-field select:focus,
+.uc-field textarea:focus {
+  outline: none;
+  border-color: #2478e5;
+  box-shadow: 0 0 0 3px rgba(36, 120, 229, .1);
+}
+
+.uc-field-hint {
+  color: #a3b1be;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.uc-form-error {
+  margin-top: 14px;
+  padding: 10px 13px;
+  border: 1px solid #f0d3ce;
+  border-radius: 6px;
+  background: #fdf5f4;
+  color: #b34d47;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.uc-form-error[hidden] {
+  display: none;
+}
+
+.uc-form-foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 22px;
+  border-top: 1px solid var(--line);
+  background: #fafbfd;
+}
+
+.uc-form-tip {
+  margin-right: auto;
+  color: #a3b1be;
+  font-size: 11.5px;
+}
+
+.uc-btn {
+  height: 34px;
+  padding: 0 18px;
+  border-radius: 5px;
+  font: inherit;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+
+.uc-btn.ghost {
+  border: 1px solid var(--line-strong);
+  background: #fff;
+  color: #557087;
+}
+
+.uc-btn.ghost:hover {
+  border-color: #9fc3ea;
+  color: #2478e5;
+}
+
+.uc-btn.primary {
+  border: 1px solid var(--blue);
+  background: var(--blue);
+  color: #fff;
+}
+
+.uc-btn.primary:hover {
+  background: #1769d0;
+}
+
+.uc-btn.primary:disabled {
+  border-color: #a9c6e8;
+  background: #a9c6e8;
+  cursor: not-allowed;
+}
+
+/* ---------- 窄屏适配 ---------- */
+@media (max-width: 1100px) {
+  .uc-side {
+    width: 190px;
+    flex-basis: 190px;
+  }
+
+  .uc-setting-value {
+    flex-basis: 120px;
+  }
+}
+
+@media (max-width: 900px) {
+  .uc-body {
+    flex-direction: column;
+    /* 纵向排列时交叉轴是宽度；用 stretch 让主区跟随容器，避免表格 min-width 把整页撑宽 */
+    align-items: stretch;
+    gap: 14px;
+  }
+
+  .uc-main {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .uc-card {
+    min-width: 0;
+  }
+
+  .uc-side {
+    position: static;
+    width: 100%;
+    flex: 0 0 auto;
+    padding: 10px 12px;
+  }
+
+  .uc-profile-card {
+    display: none;
+  }
+
+  .uc-nav {
+    display: flex;
+    gap: 4px;
+    margin-top: 0;
+    overflow-x: auto;
+  }
+
+  /* 安全中心分组在窄屏下拆平，避免组内子项另起一行把导航撑成两行 */
+  .uc-nav-group {
+    display: contents;
+  }
+
+  .uc-nav-item {
+    width: auto;
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
+
+  .uc-nav-item.uc-nav-sub {
+    padding-left: 12px;
+  }
+
+  .uc-nav-sub-list {
+    display: contents;
+  }
+
+  /* 窄屏下二级入口直接平铺，安全中心标题退化为分组标签，不可点击 */
+  .uc-nav-item.uc-nav-section {
+    pointer-events: none;
+    padding-left: 2px;
+    color: #9aa9b8;
+    font-size: 12px;
+  }
+
+  /* 分组标签与子项图标重复，窄屏下省掉，只留文字分隔 */
+  .uc-nav-item.uc-nav-section .ui-icon {
+    display: none;
+  }
+
+  .uc-nav-item.uc-nav-section .uc-nav-caret {
+    display: none;
+  }
+
+  .uc-stat-row {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  /* 窄屏下通知右列横向铺不开，回到单列排布：
+     先保证正文可读，次要信息贴在正文下方一行 */
+  .uc-notice-row {
+    flex-wrap: wrap;
+  }
+
+  .uc-notice-side {
+    width: 100%;
+    margin-top: 8px;
+    min-width: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 10px;
+    text-align: left;
+  }
+
+  .uc-account-card {
+    flex-wrap: wrap;
+  }
+
+  .uc-account-side {
+    width: 100%;
+    margin-left: 0;
+    padding-left: 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 14px;
+    text-align: left;
+  }
+
+  .uc-agreement-layout,
+  .uc-form-grid,
+  .uc-invoice-type {
+    grid-template-columns: 1fr;
+  }
+
+  /* 窄屏下多单摘要不再挤成三列 */
+  .uc-form-order-list > .uc-form-order-head,
+  .uc-form-order-list > .uc-form-order-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .uc-form-order-head > span:nth-child(2),
+  .uc-form-order-service {
+    display: none;
+  }
+
+  .uc-batch {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+  }
+
+  .uc-batch-amount {
+    margin-right: 0;
+  }
+
+  .uc-setting-row {
+    flex-wrap: wrap;
+  }
+
+  .uc-setting-value {
+    flex-basis: auto;
+    text-align: left;
+  }
+}
+
+@media (max-width: 620px) {
+  .uc-form-order {
+    grid-template-columns: 1fr;
+  }
+
+  .uc-form-body {
+    padding: 14px 16px 16px;
+  }
+
+  .uc-form-foot {
+    flex-wrap: wrap;
+    padding: 12px 16px;
+  }
+
+  .uc-form-tip {
+    width: 100%;
+    margin-right: 0;
+  }
+}
