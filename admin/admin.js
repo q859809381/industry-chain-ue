@@ -2517,27 +2517,27 @@
   function exportOrders() {
     const list = filteredOrders();
     if (!list.length) return toast('暂无可导出的订单');
-    const head = ['订单编号', '用户ID', '账号/手机号', '用户名', '订单金额(元)', '实付金额(元)', '订单时间', '支付方式', '经办人', '支付状态', '发票状态', '开通服务'];
-    const csvCell = (value) => `"${String(value == null ? '' : value).replace(/"/g, '""')}"`;
+    const header = ['订单编号', '用户ID', '账号/手机号', '用户名', '订单金额(元)', '实付金额(元)', '订单时间', '支付方式', '经办人', '支付状态', '发票状态', '开通服务'];
     const rows = list.map((order) => {
       const names = (Array.isArray(order.items) ? order.items : []).map((item) => `${item.name}(${item.term}年)`).join('、');
       return [
         order.id, (users[order.phone] || {}).uid || '', order.phone || '', order.username || '',
-        (Number(order.originAmount) || Number(order.amount) || 0).toFixed(2), (Number(order.amount) || 0).toFixed(2),
+        Number((Number(order.originAmount) || Number(order.amount) || 0).toFixed(2)),
+        Number((Number(order.amount) || 0).toFixed(2)),
         fmtDate(order.pushedAt), PAY_METHOD_LABEL[orderPayMethod(order)] || '',
         orderPayMethod(order) === 'offline' ? orderOperator(order) : '—',
         (PAY_STATUS_LABEL[order.status] || PAY_STATUS_LABEL.pending).text,
         (INVOICE_STATUS_LABEL[order.invoiceStatus] || INVOICE_STATUS_LABEL.none).text, names
-      ].map(csvCell).join(',');
+      ];
     });
-    const blob = new Blob(['\uFEFF' + [head.map(csvCell).join(','), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `订单清单_${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(link.href);
+    if (!window.WuduXlsx) return toast('导出组件未加载，请刷新页面重试');
+    const stamp = new Date().toISOString().slice(0, 10);
+    window.WuduXlsx.download(`订单清单_${stamp}.xlsx`, {
+      name: '订单清单',
+      header,
+      rows,
+      widths: [22, 10, 16, 14, 14, 14, 22, 12, 12, 12, 12, 30]
+    });
     toast(`已导出 ${list.length} 条订单`);
   }
 
