@@ -304,6 +304,13 @@
 .prd-doc-table tr.prd-updated > td { background: #fcf4cf; }
 .prd-doc-table tr.prd-updated:hover { background: #f8edb8; }
 .prd-doc-table tr.prd-updated:hover > td { background: #f8edb8; }
+/* 正文中相对 V1.1.0 新增/修改的分句：浅黄底纹标出，便于逐句发现变化 */
+.prd-doc .prd-new {
+  background: #fff4c2;
+  border-bottom: 1px solid #f0d375;
+  border-radius: 2px;
+  padding: 0 1px;
+}
 
 /* 脚注气泡：挂在 body 上的 fixed 定位小窗 */
 .prd-upd-tip {

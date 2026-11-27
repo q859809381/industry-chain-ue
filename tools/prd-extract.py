@@ -6,7 +6,7 @@
 编号在页签内从 1 重排：一级「一、二、三」，二级「1、2」，三级「1.1」。
 封面、文档信息与修订记录、目录不入抽屉。
 
-版本：V1.2.0 从定稿版 docx 生成；V1.1.0 使用 prd-v1.1.0-snapshot.json 原样保留；
+版本：V1.2.0 从图谱补全版 docx 生成；V1.1.0 使用 prd-v1.1.0-snapshot.json 原样保留；
       V1.0.0 从 20261111 的初版 docx 生成。三个版本均可在原型抽屉内切换查看。
 """
 import re, html, json, zipfile
@@ -14,7 +14,7 @@ import re, html, json, zipfile
 BASE = r'D:/projects/AI_dowell_2.0/五度产业链'
 OUT = BASE + r'/docs/prd-content.js'
 SNAP_V110 = BASE + r'/tools/prd-v1.1.0-snapshot.json'
-DOCX_V120 = BASE + r'/output/prd-industry-chain-20261126/stage3/产业链全景图谱平台PRD文档_v1.2.0_定稿版.docx'
+DOCX_V120 = BASE + r'/output/prd-industry-chain-20261126/stage3/产业链全景图谱平台PRD文档_v1.2.0_图谱补全版.docx'
 DOCX_V100 = BASE + r'/output/prd-industry-chain-20261111/stage3/产业链全景图谱平台PRD文档.docx'
 
 H_STYLE = {'000005': 1, '000001': 2, '000004': 3}
@@ -39,20 +39,21 @@ REF_RULES = [
 
 # V1.1.0 相对 V1.0.0 的章节高亮注记（快照正文已带，不再重新生成）
 # V1.2.0 相对 V1.1.0 变更的章节（原编号 -> 悬浮说明）
+# 说明文字均以「当前版本正文 vs V1.1.0 快照正文逐字比对」为依据；
+# 两版实质相同（仅标点/语气差异）的章节不标注，避免误报。
 UPDATE_NOTES_V120 = [
     ('1.1', '编写目的：补充个人中心与运营管理后台说明范围，首页、AI 助手、通用组件调整为支撑模块。'),
     ('1.2', '适用范围：将个人中心、运营管理后台纳入文档范围，明确原型页面清单。'),
     ('1.3', '术语与约定：新增「开通方式」「成交价」「服务期」「权限项」四项术语；开通服务价格由占位 ¥xxx 改为 ¥199/条。'),
     ('2', '用户角色：新增「管理员」角色，明确其通过头像浮窗进入运营管理后台的权限。'),
     ('3.2', '产品目标：补充运营侧通过后台配置图谱展示、价格、用户与订单的目标。'),
+    ('3.3', '总体业务流程：补充「服务沉淀」环节，明确订单与服务期沉淀到个人中心，以及运营侧后台配置职责。'),
     ('3.4', '功能架构：新增「个人中心」「运营管理后台」两个模块，并调整首页、开通服务、AI 助手、通用组件的优先级。'),
-    ('4.1.2', '登录触发规则：明确未登录时弹窗触发场景，以及弹窗不切换当前页面的规则。'),
-    ('4.1.3', '个人中心入口：补充头像浮窗入口，以及面板内视图切换不改变页面地址。'),
+    ('4.1.3', '个人中心入口：补充头像浮窗入口、面板内操作项与退出登录后回到产业链选择页的规则。'),
     ('4.2', '产业链查看与开通权限：按 ¥199/条 展示价格；未开通产业链改为弹窗提示且不进入详情。'),
-    ('5.2.7', '企业详情：明确 8 个分类页签与知识产权 AI 尽调报告（收费专属）。'),
+    ('5.1.2', '首页功能说明：补充热门搜索词与产业列表分组由运营管理后台配置的规则。'),
+    ('5.2.3', '产业链图谱看板：正文与 V1.1.0 保持一致，仅补充未接入图谱明细产业链的空态提示说明。'),
     ('5.3', '解决方案：由「内容待定」改为页面定位、业务逻辑与待完善项说明，明确咨询转化路径。'),
-    ('5.4', 'AI 助手：由交互设计描述改为「功能设计待定」。'),
-    ('5.5', '通用组件：改为侧边咨询工具栏、通用底部与更多服务下拉三项简要说明。'),
     ('5.6', '新增章节：个人中心——服务、订单、通知、账号设置与服务协议的功能及数据规则。'),
     ('5.7', '新增章节：运营管理后台——图谱、价格、首页热词、用户、订单、管理员与角色权限。'),
 ]
@@ -103,9 +104,9 @@ PRD_VERSIONS = [
             '术语与约定：新增「开通方式」「成交价」「服务期」「权限项」四项术语，开通价格由占位 ¥xxx 明确为 ¥199/条；',
             '用户角色：新增管理员角色，明确其通过头像浮窗进入运营管理后台的权限；',
             '产品概述：补充运营侧配置目标，功能架构新增个人中心、运营管理后台两个模块并调整优先级；',
-            '全局业务规则：补充登录触发场景、个人中心入口及未开通产业链弹窗提示规则；',
+            '全局业务规则：补充个人中心入口及未开通产业链弹窗提示规则；',
             '解决方案：由「内容待定」改为页面定位、业务逻辑与待完善项说明，明确咨询转化路径；',
-            'AI 助手：改为「功能设计待定」，不再展开未确定的交互设计；',
+            '产业图谱：链条选择页、环节企业清单抽屉正文与 V1.1.0 保持一致；图谱看板在原有规则基础上补充未接入图谱明细的空态说明；',
             '个人中心：新增服务期聚合、合并开票校验、通知已读、账号设置与服务协议的功能与数据规则说明；',
             '运营管理后台：新增图谱展示、产业链价格、首页热词、用户与服务开通、订单、管理员账号与角色权限说明；',
             '数据规则：明确成交价冻结、订单按手机号合并去重、本地存储按手机号隔离及配置生效口径；',
@@ -202,12 +203,52 @@ def sec_id(orig, fallback):
     return 'prd-sec-' + orig.replace('.', '-') if orig else fallback
 
 
-def extract_docx(docx_path, update_notes=(), by_number=False, table_notes=None):
+def clean_clause(s):
+    """分句归一化：压缩空白并忽略句末标点，避免仅标点差异被误判为新增。"""
+    return ' '.join(s.split()).rstrip('；。，、')
+
+
+def split_clauses(text):
+    """按中文句号/分号切分，保留句读符号。"""
+    return [c for c in re.split(r'(?<=[；。])', text) if c.strip()]
+
+
+def v110_clause_set(snapshot):
+    """从 V1.1.0 正文快照提取 li/p 分句集合，作为新增内容标黄的比对基准。"""
+    clauses = set()
+    for tab in ('globalHtml', 'pagesHtml'):
+        for m in re.finditer(r'<(?:li|p)[^>]*>(.*?)</(?:li|p)>', snapshot[tab], re.S):
+            plain = html.unescape(re.sub(r'<[^>]+>', ' ', m.group(1)))
+            for c in split_clauses(plain):
+                if clean_clause(c):
+                    clauses.add(clean_clause(c))
+    return clauses
+
+
+def extract_docx(docx_path, update_notes=(), by_number=False, table_notes=None, new_clauses=None):
     """提取单份 docx 的抽屉内容。update_notes 为 (原编号, 说明) 列表，用于章节高亮；
-    table_notes 为 表名 -> {首列文本: 说明}，用于表格行高亮。"""
+    table_notes 为 表名 -> {首列文本: 说明}，用于表格行高亮；
+    new_clauses 为上一版分句集合，V1.2.0 中不在集合内的正文分句标黄。"""
     updated_sections = {o for o, _ in update_notes}
     note_text = dict(update_notes)
     table_notes = table_notes or {}
+    new_clauses = new_clauses or set()
+
+    def text_html(text):
+        """渲染正文文本：按分句比对上一版，新增/修改的分句包 span 标黄。"""
+        text = rewrite_refs(text)
+        if not new_clauses:
+            return html.escape(text)
+        parts = split_clauses(text)
+        if not parts:
+            return html.escape(text)
+        out = []
+        for c in parts:
+            if clean_clause(c) in new_clauses:
+                out.append(html.escape(c))
+            else:
+                out.append('<span class="prd-new">' + html.escape(c) + '</span>')
+        return ''.join(out)
 
     def upd_note_attr(orig):
         note = note_text.get(orig)
@@ -248,15 +289,15 @@ def extract_docx(docx_path, update_notes=(), by_number=False, table_notes=None):
         text = para_text(frag)
         if not text:
             continue
+        # 差异标注版遗留的纯「修订/新增」堆叠噪声段落（如「新增新增新增新增新增」）不入正文
+        if re.fullmatch(r'(?:修订|新增)+', text):
+            continue
         if by_number:
-            # 差异标注版遗留的「修订/新增」文字前缀：剥离后按正常编号识别标题，并转为悬浮标注
+            # 差异标注版遗留的「修订/新增」文字前缀：仅剥离，不据此自动加标注。
+            # 是否标注、说明写什么，一律以 UPDATE_NOTES_V120 中逐字比对确认的差异为准。
             pm = re.match(r'^((?:修订|新增)+)(\d+(?:\.\d+)*\.?\s+\S.*)$', text)
             if pm:
                 text = pm.group(2)
-                no = orig_num(text)
-                if no and no not in note_text:
-                    note_text[no] = f'{pm.group(1)}：相对 V1.1.0 的变更。'
-                    updated_sections.add(no)
         lvl = is_heading(frag, text, by_number=by_number)
         if lvl == 'TOC':
             continue
@@ -298,12 +339,12 @@ def extract_docx(docx_path, update_notes=(), by_number=False, table_notes=None):
             if kind == 'table':
                 out.append(content)
             elif kind == 'li':
-                out.append(f'<li>{html.escape(rewrite_refs(content))}</li>')
+                out.append(f'<li>{text_html(content)}</li>')
             elif kind == 'h3':
                 cls = ' prd-updated' if orig else ''
                 out.append(f'<h4 class="prd-doc-h3{cls}"{upd_note_attr(orig)}>{html.escape(rewrite_refs(content))}</h4>')
             else:
-                out.append(f'<p>{html.escape(rewrite_refs(content))}</p>')
+                out.append(f'<p>{text_html(content)}</p>')
         html_out = []
         in_ul = False
         for piece in out:
@@ -378,10 +419,12 @@ def extract_docx(docx_path, update_notes=(), by_number=False, table_notes=None):
 
 
 def main():
-    v120 = extract_docx(DOCX_V120, by_number=True, update_notes=UPDATE_NOTES_V120, table_notes=TABLE_NOTES_V120)
-    v100 = extract_docx(DOCX_V100)
     with open(SNAP_V110, encoding='utf-8') as f:
         v110 = json.load(f)
+    base_clauses = v110_clause_set(v110)
+    v120 = extract_docx(DOCX_V120, by_number=True, update_notes=UPDATE_NOTES_V120,
+                        table_notes=TABLE_NOTES_V120, new_clauses=base_clauses)
+    v100 = extract_docx(DOCX_V100)
 
     contents = {
         'V1.2.0': v120,
