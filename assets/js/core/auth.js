@@ -20,6 +20,8 @@
   let smsCountdown = 0;
   let captchaCode = '';
   let currentView = 'sms';
+  // 开通弹窗来源：从「我的服务」续费/重新开通进入时带续费标记，支付成功后走续费落库
+  let upgradeRenew = null;
 
   /* 产业链开通方式：默认「仅联系客服」——后台没有明确设置固定价格时一律人工沟通，
    * 前台开通弹窗只保留联系客服入口，不展示任何价格示意。 */
@@ -474,10 +476,11 @@
     });
 
     /* ---------- 开通服务对话框 ---------- */
-    function openUpgrade(message, chainName) {
+    function openUpgrade(message, chainName, renewInfo) {
       closeLogin();
       closeAvatarMenu();
       upgradeChain = chainName || '';
+      upgradeRenew = renewInfo || null;
       // 开通方式由运营管理后台配置：未配置固定价格时只走人工沟通
       const sale = getChainSaleMode(upgradeChain);
       const contactOnly = sale.mode === 'contact';
@@ -506,6 +509,7 @@
     });
     document.getElementById('upgradeContactButton').addEventListener('click', () => {
       closeUpgrade();
+      upgradeRenew = null;
       // 与右侧悬浮栏「在线咨询」打开同一个客服页面
       openOnlineConsult();
     });
@@ -832,10 +836,16 @@
       const chains = new Set(Array.isArray(user.chains) ? user.chains : []);
       if (chainName) chains.add(chainName);
       signIn(user.phone, 'paid', { chains: [...chains] });
-      // 用户端「我的订单」同步生成一条支付完成的订单，服务期与扫码时选择的一致
-      if (window.WuduUserCenter && typeof window.WuduUserCenter.recordPurchase === 'function') {
-        const sale = getChainSaleMode(chainName);
-        window.WuduUserCenter.recordPurchase(chainName, user.phone, sale.mode === 'price' ? sale.price : 0, term);
+      const sale = getChainSaleMode(chainName);
+      const unitPrice = sale.mode === 'price' ? sale.price : 0;
+      const renew = upgradeRenew;
+      upgradeRenew = null;
+      if (renew && window.WuduUserCenter && typeof window.WuduUserCenter.recordRenewal === 'function') {
+        // 从「我的服务」续费/重新开通进入：按原服务到期时间顺延落库
+        window.WuduUserCenter.recordRenewal(chainName, user.phone, unitPrice, term, renew);
+      } else if (window.WuduUserCenter && typeof window.WuduUserCenter.recordPurchase === 'function') {
+        // 首次开通：用户端「我的订单」同步生成一条支付完成的订单，服务期与扫码时选择的一致
+        window.WuduUserCenter.recordPurchase(chainName, user.phone, unitPrice, term);
       }
       closePayDialog();
       notify(chainName ? `「${chainName}」${term}年服务已开通（演示支付），可查看该产业链图谱与上链企业` : '开通成功（演示支付）');
@@ -931,7 +941,7 @@
         const user = getUser();
         if (!user) return openLogin();
         if (!user.admin) return notify('当前账号未开通后台管理权限，请联系管理员');
-        window.location.href = 'admin.html';
+        window.location.href = 'admin/admin.html';
       }
       if (action === 'logout') logout();
     });
@@ -1040,8 +1050,11 @@
       // 个人中心「我的订单」待支付订单跳转支付
       payForChain: (chainName) => {
         upgradeChain = chainName || '';
+        upgradeRenew = null;
         openPayDialog(chainName || '');
-      }
+      },
+      // 统一在线咨询入口：解决方案「提交定制需求」、开通弹窗「联系客服」复用
+      openOnlineConsult
     };
     // 存储键名暴露：后台管理平台（admin.js）共用同一份账号数据
     window.WUDU_AUTH_KEYS = { USER_KEY, USERS_KEY, AUTH_KEY };

@@ -18,11 +18,11 @@
   let currentUser = null;
   try { currentUser = JSON.parse(localStorage.getItem(USER_KEY) || 'null'); } catch (error) { currentUser = null; }
   if (!currentUser || !currentUser.phone) {
-    location.replace('index.html');
+    location.replace('../index.html');
     return;
   }
   if (!currentUser.admin) {
-    document.body.innerHTML = '<div class="admin-no-perm"><h2>暂无运营管理权限</h2><p>当前账号未开通运营管理后台功能，请联系平台管理员开通。</p><a class="admin-btn admin-btn-primary" href="index.html" style="text-decoration:none">返回前台</a></div>';
+    document.body.innerHTML = '<div class="admin-no-perm"><h2>暂无运营管理权限</h2><p>当前账号未开通运营管理后台功能，请联系平台管理员开通。</p><a class="admin-btn admin-btn-primary" href="../index.html" style="text-decoration:none">返回前台</a></div>';
     return;
   }
 
@@ -150,7 +150,7 @@
   });
   $('#adminLogout').addEventListener('click', () => {
     localStorage.removeItem(USER_KEY);
-    location.replace('index.html');
+    location.replace('../index.html');
   });
 
   /* ---------- 导航切换（面包屑 + 页面动作） ---------- */

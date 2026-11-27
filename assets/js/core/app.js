@@ -4354,7 +4354,12 @@ function init() {
       }));
     }
   }
-  $('#solutionContactButton').addEventListener('click', () => showToast('定制需求已记录，产业研究顾问将在 1 个工作日内联系您'));
+  // 与右侧悬浮「在线咨询」打开同一个客服页面
+  $('#solutionContactButton').addEventListener('click', () => {
+    if (window.WuduAuth && typeof window.WuduAuth.openOnlineConsult === 'function') {
+      window.WuduAuth.openOnlineConsult();
+    }
+  });
   $('#solutionArchButton').addEventListener('click', () => { document.getElementById('solutionArchSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); });
   /* 解决方案页滚动入场动效：进入视口后为所在章节加 in-view，触发卡片/架构层错峰浮现 */
   const solutionViewEl = $('#solutionView');

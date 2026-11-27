@@ -6,4 +6,4 @@
 
 直接在浏览器中打开 `index.html` 即可运行。
 
-项目不依赖后端服务，产业数据位于同目录的 JavaScript 与 GeoJSON 文件中。
+项目不依赖后端服务。产业数据位于 `assets/js/data/`，业务脚本与样式分别位于 `assets/js/core/`、`assets/css/`；运营管理后台入口为 `admin/admin.html`。

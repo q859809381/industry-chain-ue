@@ -9,3 +9,6 @@ output/
 
 .tmp/
 *.genie
+__pycache__/
+*.pyc
+docs/合规协议/

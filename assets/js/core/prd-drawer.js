@@ -92,8 +92,13 @@
     const versionList = drawer.querySelector('[data-prd-version-list]');
     const versionDetail = drawer.querySelector('[data-prd-version-detail]');
     const versions = data.versions || [];
+    let currentVersion = 0;
+    function versionTitle(i) {
+      const v = versions[i];
+      return v ? `${v.version} · ${v.date}` : '';
+    }
     if (versions.length) {
-      versionLabel.textContent = `${versions[0].version} · ${versions[0].date}`;
+      versionLabel.textContent = versionTitle(0);
       versionList.innerHTML = versionListHtml(versions);
       showVersionDetail(0);
     } else {
@@ -101,12 +106,17 @@
       versionBtn.hidden = true;
     }
     let mode = 'global';
-    /* 关闭时的停留状态：页签 + 选中导航项 + 滚动位置，再次打开时恢复 */
+    /* 关闭时的停留状态：版本 + 页签 + 选中导航项 + 滚动位置，再次打开时恢复 */
     let savedState = null;
 
+    /* 当前选中版本的正文；旧数据没有 per-version content 时回退到顶层字段 */
+    function contentFor(i) {
+      return (versions[i] && versions[i].content) || data;
+    }
     /* 各页签左侧锚点导航（全局介绍 / 页面与功能描述 各自一份） */
     function navListFor(m) {
-      return m === 'global' ? (data.globalNav || []) : (data.pagesNav || []);
+      const content = contentFor(currentVersion);
+      return m === 'global' ? (content.globalNav || []) : (content.pagesNav || []);
     }
 
     function setActiveNav(anchor) {
@@ -147,7 +157,8 @@
       } else {
         navEl.hidden = true;
       }
-      contentEl.innerHTML = (mode === 'global' ? data.globalHtml : data.pagesHtml) || '<div class="prd-doc-empty">暂无内容</div>';
+      const content = contentFor(currentVersion);
+      contentEl.innerHTML = (mode === 'global' ? content.globalHtml : content.pagesHtml) || '<div class="prd-doc-empty">暂无内容</div>';
       hideUpdTip(true);
       const scroll = drawer.querySelector('.prd-doc-scroll');
       if (scroll) scroll.scrollTop = 0;
@@ -160,14 +171,18 @@
     }
 
     function openDrawer() {
-      if (savedState && savedState.mode !== mode) {
-        /* 恢复关闭前所在页签（setMode 内部会重新渲染） */
-        mode = savedState.mode;
-        modeButtons.forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-prd-mode') === mode));
-        renderTab();
-      } else {
-        renderTab();
+      if (savedState) {
+        /* 恢复关闭前查看的版本与页签 */
+        if (typeof savedState.version === 'number' && savedState.version !== currentVersion && versions[savedState.version]) {
+          currentVersion = savedState.version;
+          versionLabel.textContent = versionTitle(currentVersion);
+        }
+        if (savedState.mode !== mode) {
+          mode = savedState.mode;
+          modeButtons.forEach((btn) => btn.classList.toggle('active', btn.getAttribute('data-prd-mode') === mode));
+        }
       }
+      renderTab();
       if (savedState) {
         if (savedState.anchor) setActiveNav(savedState.anchor);
         const scroll = drawer.querySelector('.prd-doc-scroll');
@@ -185,6 +200,7 @@
       const btn = navEl.querySelector('[data-prd-anchor].active');
       const scroll = drawer.querySelector('.prd-doc-scroll');
       savedState = {
+        version: currentVersion,
         mode,
         anchor: btn ? btn.getAttribute('data-prd-anchor') : null,
         scrollTop: scroll ? scroll.scrollTop : 0,
@@ -218,14 +234,25 @@
       toggleVersionPanel(versionPanel.hidden);
     });
     versionPanel.addEventListener('click', (event) => event.stopPropagation());
-    /* 悬浮版本即切换右侧更新说明（点击同样生效，兼容触屏） */
+    /* 悬浮版本：右侧显示该版更新说明；点击：切换到该版本正文（历史版本可回看） */
+    function switchVersion(i) {
+      if (i === currentVersion || !versions[i]) return;
+      currentVersion = i;
+      versionLabel.textContent = versionTitle(i);
+      savedState = null;
+      renderTab();
+    }
     versionList.addEventListener('mouseover', (event) => {
       const item = event.target.closest('[data-prd-version-index]');
       if (item) showVersionDetail(Number(item.getAttribute('data-prd-version-index')));
     });
     versionList.addEventListener('click', (event) => {
       const item = event.target.closest('[data-prd-version-index]');
-      if (item) showVersionDetail(Number(item.getAttribute('data-prd-version-index')));
+      if (!item) return;
+      const i = Number(item.getAttribute('data-prd-version-index'));
+      showVersionDetail(i);
+      switchVersion(i);
+      toggleVersionPanel(false);
     });
     document.addEventListener('click', () => toggleVersionPanel(false));
     /* 脚注气泡：挂在 body 上用 fixed 定位，避免被左侧导航或滚动容器裁剪。

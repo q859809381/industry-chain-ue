@@ -228,6 +228,24 @@
         invoiceStatus: 'none', pushedAt: stamp('2026-09-12T15:30:00+08:00'), paidAt: stamp('2026-09-12T15:30:00+08:00'),
         serviceStart: stamp('2026-09-12T11:02:15+08:00'), renewedFrom: 'WD2025091211000011',
         remark: '续费「半导体材料」，服务期自 2026-09-12 起顺延 1 年。'
+      },
+      // 已过期样例：线上支付、已开票，服务期 2024-03-15 结束
+      {
+        id: 'WD2023031509300013', phone, username: '', source: 'demo',
+        items: [{ name: '智能机器人', term: 1, price: 299 }],
+        originAmount: 299, amount: 299, status: 'paid', payMethod: 'wechat',
+        invoiceStatus: 'done', pushedAt: stamp('2023-03-15T09:30:00+08:00'), paidAt: stamp('2023-03-15T09:32:11+08:00'),
+        invoiceTime: '2023-03-16 11:20:00',
+        invoiceType: '普通发票', invoiceCompany: '北京笃威尔数字技术有限公司', invoiceTaxNo: '91110108MA01ABC23X',
+        invoiceFormat: 'PDF格式'
+      },
+      // 已过期样例：线下开通、未申请发票，服务期 2025-09-12 结束
+      {
+        id: 'WD2024091211400014', phone, username: '', source: 'demo',
+        items: [{ name: '脑机接口', term: 1, price: 199 }],
+        originAmount: 199, amount: 199, status: 'paid', payMethod: 'offline',
+        invoiceStatus: 'none', pushedAt: stamp('2024-09-12T11:40:00+08:00'), paidAt: stamp('2024-09-12T14:05:36+08:00'),
+        operator: '客服专员'
       }
     ];
   }
@@ -241,6 +259,9 @@
   // 只替换 source==='demo' 的样例订单，用户真实下单（user/renew）与后台推送的一律保留
   const DEMO_SEED_KEY = 'wudu-demo-seed-version';
   const DEMO_SEED_VERSION = 2;
+  // 后续新增的样例按 id 增量补齐，避免整批替换 demo 订单时覆盖用户已经操作过的状态
+  // （如已提交的发票申请、线下支付标记等）
+  const EXTRA_DEMO_IDS = ['WD2023031509300013', 'WD2024091211400014'];
 
   function ensureDemoOrders(phone) {
     const all = localOrders();
@@ -248,8 +269,14 @@
     const adminMine = readJson(KEYS.adminOrders, []).filter((order) => order && order.phone === phone);
     const storedVersion = Number(readJson(DEMO_SEED_KEY, 0)) || 0;
 
-    // 已是最新版本且本人有数据 → 不动
-    if (storedVersion >= DEMO_SEED_VERSION && (mine.length || adminMine.length)) return;
+    // 已是最新版本且本人有数据 → 只补齐后续新增的样例
+    if (storedVersion >= DEMO_SEED_VERSION && (mine.length || adminMine.length)) {
+      const known = new Set(all.map((order) => order && order.id));
+      adminMine.forEach((order) => known.add(order && order.id));
+      const extras = demoOrders(phone).filter((order) => EXTRA_DEMO_IDS.indexOf(order.id) >= 0 && !known.has(order.id));
+      if (extras.length) writeJson(KEYS.localOrders, extras.concat(all));
+      return;
+    }
 
     // 清掉本手机号下的旧样例订单，保留真实下单与后台推送
     const kept = all.filter((order) => !(order && order.phone === phone && order.source === 'demo'));
@@ -873,25 +900,40 @@
   }
 
   /* ---------- 服务续费 ---------- */
-  // 续费 1 年：新开一笔续费订单，服务期从原到期时间接续
+  // 续费 / 重新开通统一走「开通服务弹窗」：按后台价格配置展示在线开通或仅联系客服
+  function openRenewUpgrade(service) {
+    if (!window.WuduAuth || typeof window.WuduAuth.openUpgrade !== 'function') return;
+    const expired = service.daysLeft < 0;
+    const message = expired
+      ? `「${service.name}」服务已到期，重新开通后可恢复完整访问。`
+      : `「${service.name}」服务仍在有效期内，续费可延长服务期。`;
+    closeDetail();
+    window.WuduAuth.openUpgrade(message, service.name, { key: service.key, expired });
+  }
+
+  // 续费：新开一笔续费订单，服务期从原到期时间接续
   // 已过期服务不再追溯空档期，直接从当前时间起算，续费后立即恢复访问
-  function renewService(service) {
+  // options.term 支持弹窗里选择的 1/2/3 年；options.price 为后台配置的年价
+  function renewService(service, options = {}) {
     const user = currentUser();
-    if (!user) return;
+    if (!user) return false;
+    const term = Math.max(1, Number(options.term) || 1);
+    const unitPrice = Number(options.price) > 0 ? Math.round(Number(options.price)) : (service.price || 199);
+    const amount = unitPrice * term;
     const now = new Date();
     const iso = now.toISOString();
     const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
     const expired = service.daysLeft < 0;
     const startFrom = expired ? now : service.end;
-    const newEnd = addYears(startFrom, 1);
+    const newEnd = addYears(startFrom, term);
     const order = {
       id: `WD${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`,
       phone: user.phone,
       username: userProfile(user.phone).username || '',
       source: 'renew',
-      items: [{ name: service.name, term: 1, price: service.price || 199 }],
-      originAmount: service.price || 199,
-      amount: service.price || 199,
+      items: [{ name: service.name, term, price: unitPrice }],
+      originAmount: amount,
+      amount,
       status: 'paid',
       payMethod: 'wechat',
       invoiceStatus: 'none',
@@ -901,23 +943,45 @@
       serviceStart: startFrom.toISOString(),
       renewedFrom: service.orderId,
       remark: expired
-        ? `续费「${service.name}」，原服务已于 ${fmtDate(service.end)} 到期，本次服务期自 ${fmtDate(now)} 起算 1 年。`
-        : `续费「${service.name}」，服务期自 ${fmtDate(service.end)} 起顺延 1 年。`
+        ? `续费「${service.name}」，原服务已于 ${fmtDate(service.end)} 到期，本次服务期自 ${fmtDate(now)} 起算 ${term} 年。`
+        : `续费「${service.name}」，服务期自 ${fmtDate(service.end)} 起顺延 ${term} 年。`
     };
     writeJson(KEYS.localOrders, [order].concat(localOrders()));
     const renewals = readJson(KEYS.renewals, []);
     const list = Array.isArray(renewals) ? renewals : [];
-    list.unshift({ key: service.key, orderId: order.id, time: stamp, name: service.name, fromEnd: fmtDate(service.end), expired });
+    list.unshift({ key: service.key, orderId: order.id, time: stamp, name: service.name, fromEnd: fmtDate(service.end), expired, term });
     writeJson(KEYS.renewals, list);
-    closeDetail();
-    state.view = 'services';
-    // 续费 / 重新开通完成后该服务已回到「服务中」，自动切回服务中列表
-    state.serviceTab = 'active';
-    refreshNav();
-    renderPanel();
-    notify(expired
-      ? `「${service.name}」续费成功，服务期至 ${fmtDate(newEnd)}`
-      : `「${service.name}」续费成功，服务期已顺延至 ${fmtDate(newEnd)}`);
+    if (!options.silent) {
+      closeDetail();
+      state.view = 'services';
+      // 续费 / 重新开通完成后该服务已回到「服务中」，自动切回服务中列表
+      state.serviceTab = 'active';
+      refreshNav();
+      renderPanel();
+      notify(expired
+        ? `「${service.name}」续费成功，服务期至 ${fmtDate(newEnd)}`
+        : `「${service.name}」续费成功，服务期已顺延至 ${fmtDate(newEnd)}`);
+    }
+    return true;
+  }
+
+  // 开通服务弹窗支付成功后回调：定位原服务并按续费语义落库，随后刷新个人中心视图
+  function recordRenewal(chainName, phone, price, years, renewInfo) {
+    const services = allServices();
+    const service = (renewInfo && renewInfo.key && services.find((item) => item.key === renewInfo.key))
+      || services.find((item) => item.name === chainName);
+    if (!service) return false;
+    const ok = renewService(service, { term: years, price, silent: true });
+    if (ok && isOpen()) {
+      closeDetail();
+      state.view = 'services';
+      // 续费 / 重新开通完成后该服务已回到「服务中」，自动切回服务中列表
+      state.serviceTab = 'active';
+      refreshIdentity();
+      refreshNav();
+      renderPanel();
+    }
+    return ok;
   }
 
   /* ---------- 发票信息块（字段与运营管理后台「发票申请信息」保持一致） ---------- */
@@ -1235,7 +1299,7 @@
       const serviceRenew = event.target.closest('[data-uc-service-renew]');
       if (serviceRenew) {
         const service = allServices().find((item) => item.key === serviceRenew.dataset.ucServiceRenew);
-        if (service) renewService(service);
+        if (service) openRenewUpgrade(service);
         return;
       }
       const noticeTab = event.target.closest('[data-uc-notice-tab]');
@@ -1366,13 +1430,13 @@
 
     wrap.querySelector('#ucDetailClose').addEventListener('click', closeDetail);
     wrap.querySelector('#ucDetailOk').addEventListener('click', (event) => {
-      // 服务详情里的「立即续费」按钮复用同一底部按钮
+      // 服务详情里的「重新开通 / 续费」按钮复用同一底部按钮，统一走开通服务弹窗
       const renewKey = event.currentTarget.dataset.ucRenewFrom;
       if (renewKey) {
         const service = allServices().find((item) => item.key === renewKey);
         event.currentTarget.dataset.ucRenewFrom = '';
         event.currentTarget.textContent = '知道了';
-        if (service) { renewService(service); return; }
+        if (service) { openRenewUpgrade(service); return; }
       }
       closeDetail();
     });
@@ -1487,6 +1551,7 @@
       close,
       isOpen,
       recordPurchase,
+      recordRenewal,
       refresh: () => {
         if (!isOpen()) return;
         refreshIdentity();
